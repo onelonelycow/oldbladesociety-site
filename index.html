@@ -292,6 +292,21 @@ button.pic:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.7
 .lb-next{right:10px;top:50%;transform:translateY(-50%)}
 .lb-x:hover,.lb-nav:hover{border-color:var(--gilt)}
 @media (max-width:720px){.lb{padding:56px 8px 16px}.lb-nav{top:auto;bottom:14px;transform:none}.lb-prev{left:calc(50% - 56px)}.lb-next{right:calc(50% - 56px)}.lb-fig img{max-height:calc(100vh - 170px)}}
+
+/* ---------- tree -> tale transition: the medallion lifts off the branch, golden roots grow out of it, the tale opens ---------- */
+.tx{position:fixed;inset:0;z-index:110;pointer-events:auto;overflow:hidden}
+.tx[hidden]{display:none}
+.tx .veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,color-mix(in srgb,var(--acc) 26%,#120c08) 0%,#0b0705 55%,#050302 100%);opacity:0}
+.tx svg.vines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 3px color-mix(in srgb,var(--gilt-hi) 70%,transparent)) drop-shadow(0 0 10px var(--acc))}
+.tx svg.vines path{fill:none;stroke-linecap:round}
+.tx .disc{position:absolute;border-radius:50%;overflow:hidden;padding:5px;background:conic-gradient(from 200deg,var(--acc),var(--gilt-hi),var(--acc),#5b3d16,var(--acc));
+  box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 60px color-mix(in srgb,var(--acc) 60%,transparent),0 20px 50px rgba(0,0,0,.8)}
+.tx .disc img{width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:50% 68%;border:2px solid #0d0805}
+.tx .cap{position:absolute;left:0;right:0;text-align:center;opacity:0;padding:0 20px}
+.tx .cap .k{font-family:var(--f-title);font-size:13px;letter-spacing:.42em;text-transform:uppercase;color:var(--acc)}
+.tx .cap .t{font-family:var(--f-display);font-weight:900;font-size:clamp(28px,6vw,54px);line-height:1.05;margin-top:8px;
+  background:linear-gradient(180deg,var(--gilt-hi) 10%,var(--gilt) 60%,#8a6526);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 rgba(0,0,0,.6))}
+.tx .spark{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--gilt-hi);box-shadow:0 0 8px var(--gilt-hi),0 0 16px var(--acc)}
 </style>
 </head><body>
 
@@ -300,6 +315,7 @@ button.pic:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.7
 <div id="bd" class="backdrop" hidden aria-hidden="true"></div>
 <div id="band" class="owner-band" hidden>Owner preview — sealed tales are open to you only</div>
 <div id="app" class="wrap"></div>
+<div id="tx" class="tx" hidden aria-hidden="true"></div>
 <div id="lb" class="lb" hidden role="dialog" aria-modal="true" aria-label="Enlarged image">
   <button type="button" class="lb-x" data-lb="close" aria-label="Close">✕</button>
   <button type="button" class="lb-nav lb-prev" data-lb="prev" aria-label="Previous">‹</button>
@@ -329,7 +345,9 @@ button.pic:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.7
 /* ===== One-line publish switch: tales listed here are open to everyone. ===== */
 /* Tales open to everyone, in the order they were posted on Instagram. The tree grows in this order and numbers tales by it.
    Tales not listed are hidden from the public (the owner sees them at the top as drafts). */
-const POSTED = [1,2,4,8,9,10,5,3,13,11,12,6,15,17,7,20,22,23];
+const POSTED = [1,2,4,8,9,10,5,3,13,11,12,6,15,7,20,22,23];
+/* Never shown anywhere (tests, retired). */
+const HIDDEN = [17];
 
 const IG = "https://www.instagram.com/oldbladesociety/";
 const ACC = {1:"#c9a14a",2:"#d0603a",3:"#d8b45a",4:"#8fa37a",5:"#b2453a",6:"#c0703a",7:"#4f9a8a",8:"#c4572e",9:"#b88ac0",10:"#c9a14a",11:"#6fa0c8",12:"#b0503c",13:"#8c6aa8",14:"#d4b48a",15:"#b58a3c",16:"#d6904a",17:"#6aa8a0",18:"#d4a24a",19:"#c87a3a",20:"#c9a14a",21:"#5fb0b0",22:"#e07a3a",23:"#6f9a5a"};
@@ -550,8 +568,8 @@ const S = {
   mine:{},               // "e22" -> branchId
   writing:false, note:""
 };
-const isOpen = n => S.owner || POSTED.includes(n);
-const shown = () => [...POSTED, ...EPS.map(e=>e.n).filter(n=>!POSTED.includes(n))];   /* posted tales, then sealed ones still to come */
+const isOpen = n => !HIDDEN.includes(n) && (S.owner || POSTED.includes(n));
+const shown = () => [...POSTED, ...EPS.map(e=>e.n).filter(n=>!POSTED.includes(n)&&!HIDDEN.includes(n))];   /* posted tales, then sealed ones still to come */
 const dn = n => { const i = shown().indexOf(n); return i<0 ? n : i+1; };   /* display number = place on the tree */
 const draft = n => !POSTED.includes(n);
 /* Each tale continues as a three-part series by default; give a tale parts:4 to show a fourth. */
@@ -788,6 +806,86 @@ document.addEventListener("keydown",ev=>{
   el.addEventListener("touchstart",e=>{x0=e.touches[0].clientX},{passive:true});
   el.addEventListener("touchend",e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>40)lbShow(LB.i+(dx<0?1:-1));x0=null},{passive:true});})();
 window.addEventListener("hashchange",lbClose);
+
+
+/* ===== tree -> tale transition ===== */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let TX_BUSY = false;
+function rnd(a,b){return a+Math.random()*(b-a)}
+function growVines(svg,cx,cy,r,acc){
+  const NS="http://www.w3.org/2000/svg", paths=[];
+  const reach=Math.hypot(innerWidth,innerHeight)*0.62;
+  const limb=(x,y,ang,len,w,depth,delay)=>{
+    let d=`M${x.toFixed(1)} ${y.toFixed(1)}`, px=x, py=y, a=ang;
+    const segs=4+Math.floor(Math.random()*2), step=len/segs, pts=[];
+    for(let i=0;i<segs;i++){
+      a+=rnd(-.38,.38);
+      const nx=px+Math.cos(a)*step, ny=py+Math.sin(a)*step;
+      const cxp=px+Math.cos(a+rnd(-.6,.6))*step*.6, cyp=py+Math.sin(a+rnd(-.6,.6))*step*.6;
+      d+=` Q${cxp.toFixed(1)} ${cyp.toFixed(1)} ${nx.toFixed(1)} ${ny.toFixed(1)}`; px=nx; py=ny; pts.push([nx,ny,a]);
+    }
+    const p=document.createElementNS(NS,"path");
+    p.setAttribute("d",d); p.setAttribute("stroke-width",w.toFixed(2));
+    p.setAttribute("stroke", depth===0 ? "url(#txg)" : depth===1 ? "#c9a14a" : acc);
+    p.style.opacity = depth===0 ? .95 : depth===1 ? .8 : .65;
+    svg.appendChild(p); paths.push([p,delay,len]);
+    if(depth<2) pts.forEach(([bx,by,ba],i)=>{ if(i>0 && Math.random()<.75)
+      limb(bx,by,ba+(Math.random()<.5?-1:1)*rnd(.45,1.05),len*rnd(.32,.5),w*.55,depth+1,delay+(i/segs)*0.55); });
+  };
+  const N=9;
+  for(let i=0;i<N;i++){
+    const ang=(i/N)*Math.PI*2+rnd(-.2,.2);
+    limb(cx+Math.cos(ang)*r*.92, cy+Math.sin(ang)*r*.92, ang, reach*rnd(.75,1), rnd(3.4,5), 0, rnd(0,.08));
+  }
+  return paths;
+}
+function playTransition(n, fromEl){
+  if (REDUCED || TX_BUSY || !fromEl){ location.hash="#ep-"+n; return; }
+  TX_BUSY = true;
+  const e=BY[n], acc=ACC[n], tx=document.getElementById("tx");
+  const R=fromEl.getBoundingClientRect();
+  const D=Math.min(innerWidth,innerHeight)*0.42, cx=innerWidth/2, cy=innerHeight*0.42;
+  tx.style.setProperty("--acc",acc);
+  tx.innerHTML = `<div class="veil"></div>
+    <svg class="vines"><defs><linearGradient id="txg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e2a4"/><stop offset=".5" stop-color="#c9a14a"/><stop offset="1" stop-color="#8a6526"/></linearGradient></defs></svg>
+    <div class="disc" style="left:${R.left}px;top:${R.top}px;width:${R.width}px;height:${R.height}px"><img src="${img(n,0)}" alt=""></div>
+    <div class="cap" style="top:${cy+D/2+26}px"><div class="k">Tale ${roman(dn(n))}</div><div class="t">${esc(e.t)}</div></div>`;
+  tx.hidden=false;
+  const veil=tx.querySelector(".veil"), disc=tx.querySelector(".disc"), cap=tx.querySelector(".cap"), svg=tx.querySelector("svg");
+  const ease="cubic-bezier(.22,.8,.2,1)";
+  veil.animate([{opacity:0},{opacity:1}],{duration:380,fill:"forwards",easing:"ease-out"});
+  const lift = disc.animate([
+      {left:R.left+"px",top:R.top+"px",width:R.width+"px",height:R.height+"px"},
+      {left:(cx-D/2)+"px",top:(cy-D/2)+"px",width:D+"px",height:D+"px"}],
+    {duration:620,fill:"forwards",easing:ease});
+  let skipped=false; const skip=()=>{skipped=true;};
+  tx.addEventListener("click",skip,{once:true});
+  lift.finished.then(()=>{
+    /* vines grow out of the medallion */
+    growVines(svg,cx,cy,D/2,acc).forEach(([p,delay,len])=>{
+      const L=p.getTotalLength(); p.style.strokeDasharray=L; p.style.strokeDashoffset=L;
+      p.animate([{strokeDashoffset:L},{strokeDashoffset:0}],{duration:780*Math.min(1,len/400)+260,delay:delay*1000,fill:"forwards",easing:"cubic-bezier(.3,.6,.2,1)"});
+    });
+    for(let i=0;i<14;i++){ const sp=document.createElement("i"); sp.className="spark"; tx.appendChild(sp);
+      const a=rnd(0,Math.PI*2), r0=D/2, r1=D/2+rnd(80,260);
+      sp.animate([{left:cx+Math.cos(a)*r0+"px",top:cy+Math.sin(a)*r0+"px",opacity:0},{opacity:1,offset:.3},{left:cx+Math.cos(a)*r1+"px",top:cy+Math.sin(a)*r1+"px",opacity:0}],{duration:rnd(800,1300),delay:rnd(0,300),fill:"forwards",easing:"ease-out"}); }
+    disc.animate([{transform:"scale(1)"},{transform:"scale(1.04)"},{transform:"scale(1)"}],{duration:900,easing:"ease-in-out"});
+    cap.animate([{opacity:0,transform:"translateY(10px)"},{opacity:1,transform:"none"}],{duration:500,delay:150,fill:"forwards",easing:"ease-out"});
+    return new Promise(r=>setTimeout(r, skipped?0:1050));
+  }).then(()=>{
+    location.hash="#ep-"+n;              /* the tale renders beneath the veil */
+    const out=tx.animate([{opacity:1,transform:"scale(1)"},{opacity:0,transform:"scale(1.06)"}],{duration:520,fill:"forwards",easing:"ease-in"});
+    return out.finished;
+  }).then(()=>{ tx.hidden=true; tx.innerHTML=""; tx.getAnimations?.().forEach(a=>a.cancel()); TX_BUSY=false; });
+}
+document.addEventListener("click",ev=>{
+  const a=ev.target.closest(".tree a.med, .tree a.plaque");
+  if(!a || ev.metaKey || ev.ctrlKey || ev.shiftKey) return;
+  const m=/#ep-(\d+)$/.exec(a.getAttribute("href")||""); if(!m) return;
+  ev.preventDefault();
+  const med=a.classList.contains("med") ? a : a.closest(".node")?.querySelector(".med");
+  playTransition(+m[1], med);
+}, true);
 
 /* ===== router (plain #name hashes: #tree, #ep-22, #results) ===== */
 const app = document.getElementById("app"), bd = document.getElementById("bd");
