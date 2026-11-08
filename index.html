@@ -529,7 +529,7 @@ const S = {
   writing:false, note:""
 };
 const isOpen = n => S.owner || POSTED.includes(n);
-const shown = () => [...POSTED, ...(S.owner ? EPS.map(e=>e.n).filter(n=>!POSTED.includes(n)) : [])];
+const shown = () => [...POSTED, ...EPS.map(e=>e.n).filter(n=>!POSTED.includes(n))];   /* posted tales, then sealed ones still to come */
 const dn = n => { const i = shown().indexOf(n); return i<0 ? n : i+1; };   /* display number = place on the tree */
 const draft = n => !POSTED.includes(n);
 const chaptersOf = e => (e.sequel ? [["fully-grown", e.sequel.title.replace(/^Chapter II — /,""), e.sequel.blurb]] : []).concat(e.next||[]);
@@ -554,7 +554,7 @@ function renderTree(){
     const style = `--acc:${ACC[e.n]}`;
     const node = open
       ? `<div class="node" style="${style}">
-           <a class="med" href="#ep-${e.n}" aria-label="Tale ${dn(e.n)}: ${esc(e.t)}"><img src="${img(e.n,0)}" alt="" loading="lazy" decoding="async"><span class="num">${draft(e.n)?"Draft":roman(dn(e.n))}</span></a>
+           <a class="med" href="#ep-${e.n}" aria-label="Tale ${dn(e.n)}: ${esc(e.t)}"><img src="${img(e.n,0)}" alt="" loading="lazy" decoding="async"><span class="num">${roman(dn(e.n))}</span></a>
            <a class="plaque" href="#ep-${e.n}">${esc(e.t)}</a>${twigsHTML(e)}</div>`
       : `<div class="node sealed" style="${style}">
            <div class="med" role="img" aria-label="Tale ${e.n}, sealed"><img src="${img(e.n,0)}" alt="" loading="lazy" decoding="async">${SEAL}<span class="num">${roman(dn(e.n))}</span></div>
@@ -617,7 +617,7 @@ function renderEp(n){
       : `<article class="chap locked"><div class="thumb"><img src="${img(n,0)}" alt="" loading="lazy"><svg class="seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal-blank"/><text x="50" y="52" text-anchor="middle" dominant-baseline="central" font-family="'Cinzel Decorative','Cinzel',Georgia,serif" font-weight="900" font-size="${roman(i+1).length>2?24:roman(i+1).length>1?28:32}" fill="#2a0503" stroke="#e07a6a" stroke-opacity=".45" stroke-width=".8">${roman(i+1)}</text></svg></div><div class="body">
 <h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Coming soon</span></div></article>`;
   }).join("");
-  const openNs = shown();
+  const openNs = shown().filter(isOpen);
   const idx = openNs.indexOf(n), prev = openNs[idx-1], next = openNs[idx+1];
   app.innerHTML = `
   <div class="ep" style="--acc:${ACC[n]}">
@@ -625,7 +625,7 @@ function renderEp(n){
     <header class="hero">
       <div class="frame"><img src="${img(n,0)}" alt="Cover of tale ${n}, ${esc(e.t)}"></div>
       <div>
-        <div class="eyebrow">${draft(n)?"Draft":"Tale "+roman(dn(n))}${e.lore?" · Lore":""}</div>
+        <div class="eyebrow">${"Tale "+roman(dn(n))}${e.lore?" · Lore":""}</div>
         <h1>${esc(e.t)}</h1>
         <p class="hook">${esc(e.hook)}</p>
       </div>
@@ -643,9 +643,9 @@ function renderEp(n){
       <div class="chaps">${cards}</div>
     </section>
     <footer class="foot">
-      <span>${prev?`<a href="#ep-${prev}">← ${draft(prev)?"Draft":"Tale "+roman(dn(prev))}</a>`:""}</span>
+      <span>${prev?`<a href="#ep-${prev}">← Tale ${roman(dn(prev))}</a>`:""}</span>
       <a href="#tree">The Tree of Tales</a>
-      <span>${next?`<a href="#ep-${next}">${draft(next)?"Draft":"Tale "+roman(dn(next))} →</a>`:""}</span>
+      <span>${next?`<a href="#ep-${next}">Tale ${roman(dn(next))} →</a>`:""}</span>
     </footer>
   </div>`;
   paintVotes();
