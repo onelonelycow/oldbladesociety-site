@@ -253,13 +253,33 @@ section.sec{margin-top:clamp(34px,4.5vw,46px)}
 .tally .none{color:var(--vellum-dim);font-size:14px}
 .tally .crumbs a{font-family:var(--f-title);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gilt);text-decoration:none}
 .tally .sealedtag{font-size:10px;letter-spacing:.14em;color:var(--vellum-dim);text-transform:uppercase;margin-left:8px}
+
+.chaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:6px}
+.chap{position:relative;display:flex;flex-direction:column;border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(0,0,0,.25));text-decoration:none;color:var(--vellum);overflow:hidden}
+.chap .body{padding:18px 18px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.chap .bn{font-family:var(--f-title);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc)}
+.chap h3{margin:0;font-family:var(--f-title);font-size:19px;letter-spacing:.02em;line-height:1.2}
+.chap p{margin:0;font-size:15.5px;line-height:1.45;opacity:.85}
+.chap .go{margin-top:auto;padding-top:10px;font-family:var(--f-title);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.chap .thumb{position:relative;aspect-ratio:16/9;overflow:hidden;border-bottom:1px solid var(--line)}
+.chap .thumb img{width:100%;height:100%;object-fit:cover;object-position:center 40%;display:block}
+.chap.locked .body{filter:grayscale(1);opacity:.5}
+.chap.locked .thumb img{filter:grayscale(1) blur(10px) brightness(.35);transform:scale(1.15)}
+.chap.locked .thumb .seal{width:54px;height:54px;opacity:.85;filter:grayscale(.6) drop-shadow(0 3px 3px rgba(0,0,0,.6))}
+.chap.locked .go{color:var(--vellum-dim)}
+.chap.released{border-color:color-mix(in srgb,var(--gilt) 60%,transparent);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 0 26px -8px var(--acc)}
+.chap.released .thumb img{transition:transform .5s}
+.chap.released:hover .thumb img{transform:scale(1.04)}
+.chap.released .go{color:var(--gilt)}
+.twig.locked{opacity:.55;filter:grayscale(1)}
+.twig.locked .bud{border-style:dashed}
 </style>
 </head><body>
 
 
 <div class="vignette" aria-hidden="true"></div>
 <div id="bd" class="backdrop" hidden aria-hidden="true"></div>
-<div id="band" class="owner-band" hidden>Owner preview — sealed tales are open to you only · <a href="#results">Vote tally →</a></div>
+<div id="band" class="owner-band" hidden>Owner preview — sealed tales are open to you only</div>
 <div id="app" class="wrap"></div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -282,6 +302,8 @@ const POSTED = [1,2,3,4,5,6,7,8,9,10];
 const IG = "https://www.instagram.com/oldbladesociety/";
 const ACC = {1:"#c9a14a",2:"#d0603a",3:"#d8b45a",4:"#8fa37a",5:"#b2453a",6:"#c0703a",7:"#4f9a8a",8:"#c4572e",9:"#b88ac0",10:"#c9a14a",11:"#6fa0c8",12:"#b0503c",13:"#8c6aa8",14:"#d4b48a",15:"#b58a3c",16:"#d6904a",17:"#6aa8a0",18:"#d4a24a",19:"#c87a3a",20:"#c9a14a",21:"#5fb0b0",22:"#e07a3a",23:"#6f9a5a"};
 
+/* Chapters unseal when their sequel is posted: "parentTale:chapterId" -> sequel tale number (that tale must also be in POSTED). */
+const RELEASED = { /* "22:fully-grown": 24 */ };
 const EPS = [
  {n:1,t:"The Six Oaths",hook:"The Old King Is Dead. Which Order Do You And Bro Swear To?",
   o:["The Dawn Watch","The Frost Oath","The Rose Court","The Tide Sworn","The Grave Wardens","The Hex Circle"],
@@ -497,14 +519,17 @@ const S = {
   writing:false, note:""
 };
 const isOpen = n => S.owner || POSTED.includes(n);
+const chaptersOf = e => (e.sequel ? [["fully-grown", e.sequel.title.replace(/^Chapter II — /,""), e.sequel.blurb]] : []).concat(e.next||[]);
+const releasedAs = (n,id) => { const t = RELEASED[`${n}:${id}`]; return t && BY[t] && isOpen(t) ? t : 0; };
 
 /* ===== tree ===== */
 function twigsHTML(e){
-  const open = isOpen(e.n);
-  let h = "";
-  if (e.sequel) h += `<li><${open?`a href="#ep-${e.n}"`:"span"} class="twig lit"><i class="bud"></i><span class="tt">${esc(e.sequel.title.replace("Chapter II — ","Ch. II · "))}</span><span class="cnt">soon</span></${open?"a":"span"}></li>`;
-  if (open) for (const [id,title] of e.next)
-    h += `<li><a href="#ep-${e.n}" class="twig" data-twig="e${e.n}:${id}"><i class="bud"></i><span class="tt">${esc(title)}</span><span class="cnt" data-cnt="e${e.n}:${id}">·</span></a></li>`;
+  if (!isOpen(e.n)) return "";
+  const h = chaptersOf(e).map(([id,title])=>{
+    const r = releasedAs(e.n,id);
+    return r ? `<li><a href="#ep-${r}" class="twig lit"><i class="bud"></i><span class="tt">${esc(title)}</span><span class="cnt">read</span></a></li>`
+             : `<li><span class="twig locked"><i class="bud"></i><span class="tt">${esc(title)}</span></span></li>`;
+  }).join("");
   return h ? `<ul class="twigs">${h}</ul>` : "";
 }
 function renderTree(){
@@ -571,15 +596,14 @@ function renderEp(n){
     if (i===0) { const ch=[...p][0]; return `<p>${illum(ch)}<span class="sr">${esc(ch)}</span>${esc(p.slice(ch.length))}</p>`; }
     return `<p>${esc(p)}</p>`;
   }).join("");
-  const seq = e.sequel ? `<div class="coming"><span class="glow"></span><div><div class="k">Confirmed · Coming soon</div><div class="t">${esc(e.sequel.title)}</div><div class="d">${esc(e.sequel.blurb)}</div></div></div>` : "";
-  const cards = e.next.map(([id,title,blurb],i)=>`
-    <article class="vcard" data-card="e${n}:${id}">
-      <div class="bn">Branch ${roman(i+1)}</div>
-      <h3>${esc(title)}</h3><p>${esc(blurb)}</p>
-      <div class="tally"><div class="meta"><span class="c" data-cnt="e${n}:${id}">·</span><span data-pct="e${n}:${id}"></span></div>
-      <div class="bar"><i data-bar="e${n}:${id}"></i></div></div>
-      <button class="vbtn" id="v-e${n}-${id}" data-vote="${id}" data-ep="${n}" type="button">Choose this branch</button>
-    </article>`).join("");
+  const cards = chaptersOf(e).map(([id,title,blurb],i)=>{
+    const r = releasedAs(n,id);
+    return r
+      ? `<a class="chap released" href="#ep-${r}"><div class="thumb"><img src="${img(r,0)}" alt="" loading="lazy"></div><div class="body">
+           <div class="bn">Path ${roman(i+1)} · Unsealed</div><h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Read the chapter →</span></div></a>`
+      : `<article class="chap locked"><div class="thumb"><img src="${img(n,0)}" alt="" loading="lazy">${SEAL}</div><div class="body">
+           <div class="bn">Path ${roman(i+1)} · Sealed</div><h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Coming soon</span></div></article>`;
+  }).join("");
   const openNs = EPS.map(x=>x.n).filter(isOpen);
   const idx = openNs.indexOf(n), prev = openNs[idx-1], next = openNs[idx+1];
   app.innerHTML = `
@@ -591,7 +615,6 @@ function renderEp(n){
         <div class="eyebrow">Tale ${roman(n)}${e.lore?" · Lore":""}</div>
         <h1>${esc(e.t)}</h1>
         <p class="hook">${esc(e.hook)}</p>
-        <a class="ig" href="${IG}" target="_blank" rel="noopener">${IG_ICON}Pick yours in the comments</a>
       </div>
     </header>
     <section class="sec">
@@ -603,12 +626,10 @@ function renderEp(n){
       <h2>From The Chronicle</h2>
       <div class="chronicle"><div class="leaf">${cap}</div></div>
     </section>
-    <section class="sec" id="vote">
-      <h2>Where does this tale go next?</h2>
-      <p class="sub">Three branches could grow from this tale. Choose one; you can change your mind until the next chapter is carved.</p>
-      ${seq}
-      <div class="votes" data-votes="e${n}">${cards}</div>
-      <div class="vstatus" id="vstatus" aria-live="polite"></div>
+    <section class="sec" id="next">
+      <h2>The Tale Continues</h2>
+      <p class="sub">Each chapter unseals the day it's posted on Instagram.</p>
+      <div class="chaps">${cards}</div>
     </section>
     <footer class="foot">
       <span>${prev?`<a href="#ep-${prev}">← Tale ${roman(prev)}</a>`:""}</span>
@@ -741,10 +762,7 @@ async function refresh(){
 }
 (async ()=>{
   try{ const q=new URLSearchParams(location.search); if(q.get("owner")==="ashenthrone"){localStorage.setItem("obs_owner","1")} if(localStorage.getItem("obs_owner")==="1"){S.owner=true;document.getElementById("band").hidden=false;route();} }catch{}
-  S.uid=voterId();
-  try{ const mine=await rpc("my_votes",{p_voter:S.uid}); for(const r of mine||[]) S.mine["e"+r.ep]=r.choice; }catch{}
-  await refresh();
-  setInterval(()=>{ if(!document.hidden) refresh(); },20000);
+  /* voting retired: chapters now unseal when posted (see RELEASED) */
 })();
 </script>
 
