@@ -296,8 +296,9 @@ button.pic:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.7
 /* ---------- tree -> tale transition: the medallion lifts off the branch, golden roots grow out of it, the tale opens ---------- */
 .tx{position:fixed;inset:0;z-index:110;pointer-events:auto;overflow:hidden}
 .tx[hidden]{display:none}
+body.txing .backdrop{visibility:hidden}
 .tx .veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,color-mix(in srgb,var(--acc) 26%,#120c08) 0%,#0b0705 55%,#050302 100%);opacity:0}
-.tx svg.vines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 3px color-mix(in srgb,var(--gilt-hi) 70%,transparent)) drop-shadow(0 0 10px var(--acc))}
+.tx svg.vines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .tx svg.vines path{fill:none;stroke-linecap:round}
 .tx .disc{position:absolute;border-radius:50%;overflow:hidden;padding:5px;background:conic-gradient(from 200deg,var(--acc),var(--gilt-hi),var(--acc),#5b3d16,var(--acc));
   box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 60px color-mix(in srgb,var(--acc) 60%,transparent),0 20px 50px rgba(0,0,0,.8)}
@@ -837,6 +838,7 @@ function growVines(svg,cx,cy,r,acc){
     p.setAttribute("d",d); p.setAttribute("stroke-width",w.toFixed(2));
     p.setAttribute("stroke", depth===0 ? "url(#txg)" : depth===1 ? "#c9a14a" : acc);
     p.style.opacity = depth===0 ? .95 : depth===1 ? .8 : .65;
+    if (depth===0){ const g=p.cloneNode(); g.setAttribute("stroke",acc); g.setAttribute("stroke-width",(w*3.2).toFixed(1)); g.style.opacity=.22; svg.appendChild(g); paths.push([g,delay,len]); }
     svg.appendChild(p); paths.push([p,delay,len]);
     if(depth<2) pts.forEach(([bx,by,ba],i)=>{ if(i>0 && Math.random()<.75)
       limb(bx,by,ba+(Math.random()<.5?-1:1)*rnd(.45,1.05),len*rnd(.32,.5),w*.55,depth+1,delay+(i/segs)*0.55); });
@@ -850,7 +852,7 @@ function growVines(svg,cx,cy,r,acc){
 }
 function playTransition(n, fromEl){
   if (REDUCED || TX_BUSY || !fromEl){ location.hash="#ep-"+n; return; }
-  TX_BUSY = true;
+  TX_BUSY = true; document.body.classList.add("txing");
   const e=BY[n], acc=ACC[n], tx=document.getElementById("tx");
   const R=fromEl.getBoundingClientRect();
   const D=Math.min(innerWidth,innerHeight)*0.42, cx=innerWidth/2, cy=innerHeight*0.42;
@@ -883,9 +885,10 @@ function playTransition(n, fromEl){
     return new Promise(r=>setTimeout(r, skipped?0:1050));
   }).then(()=>{
     location.hash="#ep-"+n;              /* the tale renders beneath the veil */
+    document.body.classList.remove("txing");
     const out=tx.animate([{opacity:1,transform:"scale(1)"},{opacity:0,transform:"scale(1.06)"}],{duration:520,fill:"forwards",easing:"ease-in"});
     return out.finished;
-  }).then(()=>{ tx.hidden=true; tx.innerHTML=""; tx.getAnimations?.().forEach(a=>a.cancel()); TX_BUSY=false; });
+  }).then(()=>{ tx.hidden=true; tx.innerHTML=""; tx.getAnimations?.().forEach(a=>a.cancel()); TX_BUSY=false; document.body.classList.remove("txing"); });
 }
 document.addEventListener("click",ev=>{
   const a=ev.target.closest(".tree a.med, .tree a.plaque");
@@ -900,7 +903,7 @@ document.addEventListener("click",ev=>{
 /* ===== tale -> tree: vines draw back into the medallion, which returns to its branch ===== */
 function playReturn(n){
   if (REDUCED || TX_BUSY){ location.hash="#tree"; requestAnimationFrame(()=>document.querySelector(`.tree a.med[href="#ep-${n}"]`)?.scrollIntoView({block:"center"})); return; }
-  TX_BUSY = true;
+  TX_BUSY = true; document.body.classList.add("txing");
   const e=BY[n], acc=ACC[n], tx=document.getElementById("tx");
   const D=Math.min(innerWidth,innerHeight)*0.42, cx=innerWidth/2, cy=innerHeight*0.42;
   tx.style.setProperty("--acc",acc);
@@ -938,7 +941,7 @@ function playReturn(n){
         veil.animate([{opacity:1},{opacity:0}],{duration:620,fill:"forwards",easing:"ease-in-out"});
         fly.finished.then(()=>{
           if (med){ med.style.visibility=""; med.animate([{boxShadow:`0 0 0 1px rgba(0,0,0,.6),0 0 46px ${acc}`},{}],{duration:700,easing:"ease-out"}); }
-          tx.hidden=true; tx.innerHTML=""; tx.getAnimations?.().forEach(a=>a.cancel()); TX_BUSY=false;
+          tx.hidden=true; tx.innerHTML=""; tx.getAnimations?.().forEach(a=>a.cancel()); TX_BUSY=false; document.body.classList.remove("txing");
         });
       });
     }, longest*0.85);
