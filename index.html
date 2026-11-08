@@ -554,7 +554,8 @@ const isOpen = n => S.owner || POSTED.includes(n);
 const shown = () => [...POSTED, ...EPS.map(e=>e.n).filter(n=>!POSTED.includes(n))];   /* posted tales, then sealed ones still to come */
 const dn = n => { const i = shown().indexOf(n); return i<0 ? n : i+1; };   /* display number = place on the tree */
 const draft = n => !POSTED.includes(n);
-const chaptersOf = e => (e.sequel ? [["fully-grown", e.sequel.title.replace(/^Chapter II — /,""), e.sequel.blurb]] : []).concat(e.next||[]);
+/* Each tale continues as a three-part series by default; give a tale parts:4 to show a fourth. */
+const chaptersOf = e => (e.sequel ? [["fully-grown", e.sequel.title.replace(/^Chapter II — /,""), e.sequel.blurb]] : []).concat(e.next||[]).slice(0, e.parts||3);
 const releasedAs = (n,id) => { const t = RELEASED[`${n}:${id}`]; return t && BY[t] && isOpen(t) ? t : 0; };
 
 /* ===== tree ===== */
