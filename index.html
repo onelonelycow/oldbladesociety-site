@@ -298,7 +298,9 @@ section.sec{margin-top:clamp(34px,4.5vw,46px)}
 
 <script>
 /* ===== One-line publish switch: tales listed here are open to everyone. ===== */
-const POSTED = [1,2,3,4,5,6,7,8,9,10];
+/* Tales open to everyone, in the order they were posted on Instagram. The tree grows in this order and numbers tales by it.
+   Tales not listed are hidden from the public (the owner sees them at the top as drafts). */
+const POSTED = [1,2,4,8,9,10,5,3,13,11,12,6,15,17,7,20,22,23];
 
 const IG = "https://www.instagram.com/oldbladesociety/";
 const ACC = {1:"#c9a14a",2:"#d0603a",3:"#d8b45a",4:"#8fa37a",5:"#b2453a",6:"#c0703a",7:"#4f9a8a",8:"#c4572e",9:"#b88ac0",10:"#c9a14a",11:"#6fa0c8",12:"#b0503c",13:"#8c6aa8",14:"#d4b48a",15:"#b58a3c",16:"#d6904a",17:"#6aa8a0",18:"#d4a24a",19:"#c87a3a",20:"#c9a14a",21:"#5fb0b0",22:"#e07a3a",23:"#6f9a5a"};
@@ -520,6 +522,9 @@ const S = {
   writing:false, note:""
 };
 const isOpen = n => S.owner || POSTED.includes(n);
+const shown = () => [...POSTED, ...(S.owner ? EPS.map(e=>e.n).filter(n=>!POSTED.includes(n)) : [])];
+const dn = n => { const i = shown().indexOf(n); return i<0 ? n : i+1; };   /* display number = place on the tree */
+const draft = n => !POSTED.includes(n);
 const chaptersOf = e => (e.sequel ? [["fully-grown", e.sequel.title.replace(/^Chapter II — /,""), e.sequel.blurb]] : []).concat(e.next||[]);
 const releasedAs = (n,id) => { const t = RELEASED[`${n}:${id}`]; return t && BY[t] && isOpen(t) ? t : 0; };
 
@@ -536,16 +541,16 @@ function twigsHTML(e){
 function renderTree(){
   document.title = "The Tree of Tales";
   bd.hidden = true;
-  const rows = [...EPS].sort((a,b)=>b.n-a.n).map((e,i)=>{
+  const rows = shown().map(n=>BY[n]).reverse().map((e,i)=>{
     const side = i%2 ? "R" : "L";
     const open = isOpen(e.n);
     const style = `--acc:${ACC[e.n]}`;
     const node = open
       ? `<div class="node" style="${style}">
-           <a class="med" href="#ep-${e.n}" aria-label="Tale ${e.n}: ${esc(e.t)}"><img src="${img(e.n,0)}" alt="" loading="lazy" decoding="async"><span class="num">${roman(e.n)}</span></a>
+           <a class="med" href="#ep-${e.n}" aria-label="Tale ${dn(e.n)}: ${esc(e.t)}"><img src="${img(e.n,0)}" alt="" loading="lazy" decoding="async"><span class="num">${draft(e.n)?"Draft":roman(dn(e.n))}</span></a>
            <a class="plaque" href="#ep-${e.n}">${esc(e.t)}</a>${twigsHTML(e)}</div>`
       : `<div class="node sealed" style="${style}">
-           <div class="med" role="img" aria-label="Tale ${e.n}, sealed"><img src="${img(e.n,0)}" alt="" loading="lazy" decoding="async">${SEAL}<span class="num">${roman(e.n)}</span></div>
+           <div class="med" role="img" aria-label="Tale ${e.n}, sealed"><img src="${img(e.n,0)}" alt="" loading="lazy" decoding="async">${SEAL}<span class="num">${roman(dn(e.n))}</span></div>
            <div class="plaque">Sealed</div></div>`;
     return `<div class="row ${side}"><div class="limb">${side==="R"?'<div class="bough"></div>':""}${node}${side==="L"?'<div class="bough"></div>':""}</div></div>`;
   }).join("");
@@ -568,7 +573,7 @@ function renderTree(){
         <path d="M268 0h24c2 30 10 52 40 70 40 24 110 30 190 58-80-6-150-14-200-34-30-12-46-30-52-52-4 40-2 70 10 108-26-36-30-70-24-110-14 30-46 52-96 70-50 18-104 26-150 50 40-40 100-56 150-76 50-20 80-44 108-84z"/>
       </g>
     </svg>
-    <div class="root-label">Tale I · The Roots</div>`;
+    <div class="root-label">The Roots</div>`;
   paintVotes();
 }
 
@@ -581,8 +586,8 @@ function renderEp(n){
     bd.hidden = true;
     app.innerHTML = `<div class="ep"><nav class="topnav"><a href="#tree">← The Tree</a></nav>
       <div class="sealed-page"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#seal"/></svg>
-      <div class="eyebrow" style="--acc:${ACC[n]}">Tale ${roman(n)}</div><h1>This tale is sealed</h1>
-      <p>It unveils soon on Instagram. Follow along so you don't miss it.</p>
+      <div class="eyebrow" style="--acc:${ACC[n]}">Tale</div><h1>This tale is sealed</h1>
+      <p>This tale hasn't been told yet.</p>
       <a class="ig" href="${IG}" target="_blank" rel="noopener">${IG_ICON}@oldbladesociety</a></div></div>`;
     return;
   }
@@ -605,7 +610,7 @@ function renderEp(n){
       : `<article class="chap locked"><div class="thumb"><img src="${img(n,0)}" alt="" loading="lazy">${SEAL}</div><div class="body">
            <div class="bn">Path ${roman(i+1)} · Sealed</div><h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Coming soon</span></div></article>`;
   }).join("");
-  const openNs = EPS.map(x=>x.n).filter(isOpen);
+  const openNs = shown();
   const idx = openNs.indexOf(n), prev = openNs[idx-1], next = openNs[idx+1];
   app.innerHTML = `
   <div class="ep" style="--acc:${ACC[n]}">
@@ -613,7 +618,7 @@ function renderEp(n){
     <header class="hero">
       <div class="frame"><img src="${img(n,0)}" alt="Cover of tale ${n}, ${esc(e.t)}"></div>
       <div>
-        <div class="eyebrow">Tale ${roman(n)}${e.lore?" · Lore":""}</div>
+        <div class="eyebrow">${draft(n)?"Draft":"Tale "+roman(dn(n))}${e.lore?" · Lore":""}</div>
         <h1>${esc(e.t)}</h1>
         <p class="hook">${esc(e.hook)}</p>
       </div>
@@ -632,9 +637,9 @@ function renderEp(n){
       <div class="chaps">${cards}</div>
     </section>
     <footer class="foot">
-      <span>${prev?`<a href="#ep-${prev}">← Tale ${roman(prev)}</a>`:""}</span>
+      <span>${prev?`<a href="#ep-${prev}">← ${draft(prev)?"Draft":"Tale "+roman(dn(prev))}</a>`:""}</span>
       <a href="#tree">The Tree of Tales</a>
-      <span>${next?`<a href="#ep-${next}">Tale ${roman(next)} →</a>`:""}</span>
+      <span>${next?`<a href="#ep-${next}">${draft(next)?"Draft":"Tale "+roman(dn(next))} →</a>`:""}</span>
     </footer>
   </div>`;
   paintVotes();
@@ -719,7 +724,7 @@ function renderResults(){
     rows.forEach(r=>{ if(r.c) all.push({...r,ep:e}); });
     const max=rows[0].c;
     const lines=rows.map(r=>`<div class="ln${r.c&&r.c===max?" lead":""}"><span class="t">${esc(r.title)}</span><span class="bar"><i style="width:${sum?Math.round(r.c*100/sum):0}%"></i></span><span class="n">${r.c} · ${sum?Math.round(r.c*100/sum):0}%</span></div>`).join("");
-    return `<section class="ep" style="--acc:${ACC[e.n]}"><h2><a href="#ep-${e.n}">Tale ${roman(e.n)} · ${esc(e.t)}</a><small>${sum} vote${sum===1?"":"s"}</small>${POSTED.includes(e.n)?"":'<span class="sealedtag">sealed</span>'}</h2>${lines}</section>`;
+    return `<section class="ep" style="--acc:${ACC[e.n]}"><h2><a href="#ep-${e.n}">Tale ${roman(dn(e.n))} · ${esc(e.t)}</a><small>${sum} vote${sum===1?"":"s"}</small>${POSTED.includes(e.n)?"":'<span class="sealedtag">sealed</span>'}</h2>${lines}</section>`;
   }).join("");
   all.sort((a,b)=>b.c-a.c);
   const top=all.slice(0,5).map(r=>`<div class="ln" style="--acc:${ACC[r.ep.n]}"><span class="t">${esc(r.title)} <span style="opacity:.6">— Tale ${roman(r.ep.n)}</span></span><span class="bar"><i style="width:${all[0]?Math.round(r.c*100/all[0].c):0}%"></i></span><span class="n">${r.c}</span></div>`).join("") || '<div class="none">No votes yet.</div>';
