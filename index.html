@@ -316,6 +316,59 @@ body.txing::after{display:none}
 .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);z-index:130;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
   font-family:var(--f-title);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:linear-gradient(90deg,var(--gilt),var(--gilt-hi),var(--gilt));padding:9px 16px;border-radius:2px;box-shadow:0 8px 24px rgba(0,0,0,.6)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- picks + your path ---------- */
+.pick-hint{margin:6px 0 0;color:var(--vellum);opacity:.8;font-size:15px}
+.opt{position:relative}
+.opt .pic{position:relative}
+.pickbtn{appearance:none;cursor:pointer;margin-top:8px;width:100%;font-family:var(--f-title);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--vellum);background:rgba(18,12,8,.6);border:1px solid var(--line);padding:7px 6px;border-radius:2px;transition:background .2s,border-color .2s,color .2s}
+.pickbtn:hover{border-color:var(--acc);color:var(--gilt-hi)}
+.opt.mine .pickbtn{background:var(--acc);border-color:var(--acc);color:#0d0805}
+.opt.mine .pic{box-shadow:0 0 0 2px var(--acc),0 0 28px color-mix(in srgb,var(--acc) 55%,transparent),0 10px 24px rgba(0,0,0,.6)}
+.opt.revealed:not(.mine) .pic img{filter:saturate(.75) brightness(.8)}
+.pct{position:absolute;left:4px;right:4px;bottom:4px;height:0;display:flex;align-items:flex-end;justify-content:flex-end;pointer-events:none}
+.opt.revealed .pct{height:100%;background:linear-gradient(0deg,rgba(8,5,3,.85),transparent 38%)}
+.opt.revealed .pct::before{content:"";position:absolute;left:8px;right:8px;bottom:8px;height:4px;background:rgba(255,255,255,.12)}
+.opt.revealed .pct::after{content:"";position:absolute;left:8px;bottom:8px;height:4px;width:calc((100% - 16px) * var(--w,0) / 100);background:var(--acc);transition:width .6s ease}
+.pct{font-family:var(--f-title);font-weight:700;font-size:clamp(15px,2.2vw,22px);color:#fff;text-shadow:0 2px 6px #000;padding:0 10px 18px}
+.pick-sum{margin:10px 0 0;font-size:16px;color:var(--vellum);opacity:.9}
+.path-prog{margin:22px auto 0;max-width:380px}
+.path-prog .pp-k{font-family:var(--f-title);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--gilt)}
+.path-prog .pp-bar{height:6px;margin:8px 0;background:rgba(255,255,255,.06);border:1px solid rgba(201,161,74,.25)}
+.path-prog .pp-bar i{display:block;height:100%;background:linear-gradient(90deg,#8a6526,var(--gilt),var(--gilt-hi));box-shadow:0 0 10px var(--gilt)}
+.path-prog .pp-t{font-size:16px;color:var(--vellum);opacity:.9}
+.pp-legend{appearance:none;cursor:pointer;background:none;border:0;padding:0;font:inherit;color:var(--gilt-hi);text-decoration:underline;text-underline-offset:3px}
+.node.walked .med{box-shadow:0 0 0 2px var(--gilt-hi),0 0 30px var(--gilt),0 8px 18px var(--shadow)}
+.your-pick{margin-top:6px;font-family:var(--f-title);font-size:12px;letter-spacing:.06em;color:var(--gilt-hi)}
+.lbpick{appearance:none;cursor:pointer;margin-top:4px;font-family:var(--f-title);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--gilt-hi);background:rgba(18,12,8,.7);border:1px solid var(--acc);padding:10px 18px;border-radius:2px}
+.lbpick.on{background:var(--acc);color:#0d0805}
+/* ---------- legend card ---------- */
+.legend-modal{position:fixed;inset:0;z-index:120;background:rgba(6,4,3,.92);display:flex;align-items:center;justify-content:center;padding:20px}
+.legend-modal[hidden]{display:none}
+.lg-in{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;max-height:100%}
+.lg-in img{max-height:calc(100vh - 130px);max-width:92vw;border:1px solid var(--line);box-shadow:0 20px 60px #000}
+.lg-act{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.lg-act .share{margin-top:0;text-decoration:none}
+.lg-in .lb-x{top:-6px;right:-6px}
+/* ---------- runes ---------- */
+.rune{position:absolute;z-index:3;appearance:none;background:none;border:0;cursor:pointer;font-size:22px;line-height:1;color:var(--gilt-hi);opacity:.16;padding:6px;transition:opacity .3s,text-shadow .3s,transform .6s}
+.rune:hover{opacity:.9;text-shadow:0 0 10px var(--gilt-hi),0 0 22px var(--acc)}
+.rune.got{opacity:1;transform:scale(2.4) rotate(20deg);text-shadow:0 0 20px var(--gilt-hi);transition:transform .8s,opacity .8s}
+.rune-hero{right:8px;bottom:8px}.rune-chronicle{right:14px;top:10px}.rune-foot{left:50%;bottom:-34px}.rune-choices{right:0;top:2px}.rune-next{right:0;top:-2px}
+.rune-count{margin-top:14px;font-size:20px;letter-spacing:.3em;color:var(--vellum-dim)}
+.rune-count span.on{color:var(--gilt-hi);text-shadow:0 0 8px var(--gilt)}
+.rune-count a{font-family:var(--f-title);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gilt-hi);margin-left:8px}
+.vault-in{max-width:760px;margin:30px auto 0;text-align:center}
+.vault-in h1{font-family:var(--f-display);font-size:clamp(28px,6vw,52px);margin:10px 0 22px;background:linear-gradient(180deg,var(--gilt-hi),var(--gilt) 60%,#8a6526);-webkit-background-clip:text;background-clip:text;color:transparent}
+.vault-in .chronicle{text-align:left}
+.runes-row{font-size:34px;letter-spacing:.5em;color:var(--gilt-hi);text-shadow:0 0 14px var(--gilt);margin-bottom:10px}
+/* ---------- sound toggle ---------- */
+.sound-btn{position:fixed;left:max(14px,env(safe-area-inset-left));bottom:max(14px,env(safe-area-inset-bottom));z-index:60;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  color:var(--gilt);background:rgba(18,12,8,.82);border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.5);transition:color .2s,border-color .2s,box-shadow .2s}
+.sound-btn:hover{border-color:var(--gilt)}
+.sound-btn.on{color:var(--gilt-hi);border-color:var(--gilt);box-shadow:0 0 16px color-mix(in srgb,var(--gilt) 45%,transparent)}
 </style>
 </head><body>
 
@@ -1008,5 +1061,6 @@ async function refresh(){
   /* voting retired: chapters now unseal when posted (see RELEASED) */
 })();
 </script>
+<script src="features.js?v=1"></script>
 
 </body></html>
