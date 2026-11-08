@@ -156,9 +156,8 @@ section.sec{margin-top:clamp(34px,4.5vw,46px)}
 .sec h2{font-family:var(--f-title);font-weight:700;font-size:clamp(20px,3.6vw,28px);letter-spacing:.06em;color:var(--vellum);display:flex;align-items:center;gap:14px}
 .sec h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--acc),transparent)}
 .sec .sub{color:var(--vellum-dim);font-style:italic;margin:6px 0 0}
-.strip{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:16px 2px 12px;margin-top:4px;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--acc) 38%,#2a1d12) rgba(255,255,255,.03);overscroll-behavior-x:contain}
-.opt{flex:0 0 clamp(150px,40vw,200px);scroll-snap-align:start;margin:0}
-.opt.wide{flex-basis:clamp(220px,64vw,300px)}
+.strip{display:grid;grid-template-columns:repeat(var(--cols,6),minmax(0,1fr));gap:clamp(10px,1.6vw,16px);padding:16px 0 4px;margin-top:4px}
+.opt{margin:0;min-width:0}
 .opt .pic{aspect-ratio:480/854;max-width:100%;background:var(--ink-2);border:1px solid var(--line);padding:4px;border-radius:2px;box-shadow:0 10px 24px rgba(0,0,0,.6)}
 .opt.wide .pic{aspect-ratio:3/4}
 .opt .pic img{width:100%;height:100%;object-fit:cover}
@@ -214,6 +213,9 @@ section.sec{margin-top:clamp(34px,4.5vw,46px)}
 .sealed-page p{font-style:italic;color:var(--vellum-dim);font-size:19px}
 
 @media (max-width:720px){
+  .strip{grid-template-columns:repeat(var(--mcols,3),minmax(0,1fr));gap:10px}
+  .opt figcaption{font-size:11.5px}
+  .opt figcaption small{font-size:11px}
   /* tree: trunk on the left, every tale on one side as a medallion + text card */
   .tree{--trunk:14px}
   .tree::before{left:20px;transform:none}
@@ -625,8 +627,7 @@ function renderEp(n){
     </header>
     <section class="sec">
       <h2>${e.lore?"The Plates":"The "+["","","","","","","Six","","Eight"][frames(e)]+" Choices"}</h2>
-      <p class="hint">Swipe through ${e.lore?"the carousel":"the choices"}, in reel order.</p>
-      <div class="strip" tabindex="0" aria-label="${e.lore?"Carousel plates":"Choices"}">${opts}</div>
+      <div class="strip" style="--cols:${frames(e)>6?4:frames(e)};--mcols:${frames(e)>6?2:frames(e)===4?2:3}" aria-label="${e.lore?"Carousel plates":"Choices"}">${opts}</div>
     </section>
     <section class="sec">
       <h2>From The Chronicle</h2>
