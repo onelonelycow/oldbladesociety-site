@@ -608,9 +608,9 @@ function renderEp(n){
     const r = releasedAs(n,id);
     return r
       ? `<a class="chap released" href="#ep-${r}"><div class="thumb"><img src="${img(r,0)}" alt="" loading="lazy"></div><div class="body">
-           <div class="bn">Path ${roman(i+1)} · Unsealed</div><h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Read the chapter →</span></div></a>`
+<h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Read the chapter →</span></div></a>`
       : `<article class="chap locked"><div class="thumb"><img src="${img(n,0)}" alt="" loading="lazy">${SEAL}</div><div class="body">
-           <div class="bn">Path ${roman(i+1)} · Sealed</div><h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Coming soon</span></div></article>`;
+<h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Coming soon</span></div></article>`;
   }).join("");
   const openNs = shown();
   const idx = openNs.indexOf(n), prev = openNs[idx-1], next = openNs[idx+1];
