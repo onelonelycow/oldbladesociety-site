@@ -254,57 +254,99 @@ function audio(){
   if (SND.ctx) return SND.ctx;
   const C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
   const ctx = SND.ctx = new C();
-  /* louder ambience with a limiter so nothing clips */
-  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.knee.value = 12; comp.ratio.value = 6; comp.attack.value = .005; comp.release.value = .25;
-  SND.master = ctx.createGain(); SND.master.gain.value = 3.2; SND.master.connect(comp).connect(ctx.destination);
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -20; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = .01; comp.release.value = .3;
+  SND.master = ctx.createGain(); SND.master.gain.value = 1.6; SND.master.connect(comp).connect(ctx.destination);
   SND.analyser = ctx.createAnalyser(); comp.connect(SND.analyser);
-  const len = ctx.sampleRate * 3, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
-  let b = 0; for (let i = 0; i < len; i++) { const w = Math.random()*2-1; b = (b + .02*w) / 1.02; d[i] = w*.6 + b*3; }
-  SND.noise = buf; return ctx;
+  /* three noise colours, 4 s loops */
+  const len = ctx.sampleRate * 4, mk = () => ctx.createBuffer(1, len, ctx.sampleRate);
+  const white = mk(), pink = mk(), brown = mk(), w = white.getChannelData(0), p = pink.getChannelData(0), br = brown.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0,last=0;
+  for (let i = 0; i < len; i++) {
+    const x = Math.random()*2-1; w[i] = x;
+    b0=.99886*b0+x*.0555179; b1=.99332*b1+x*.0750759; b2=.969*b2+x*.153852; b3=.8665*b3+x*.3104856; b4=.55*b4+x*.5329522; b5=-.7616*b5-x*.016898;
+    p[i] = (b0+b1+b2+b3+b4+b5+b6+x*.5362)*.11; b6 = x*.115926;
+    last = (last + .02*x)/1.02; br[i] = last*3.5;
+  }
+  SND.buf = { white, pink, brown }; SND.noise = white;
+  return ctx;
 }
-function noiseSrc(){ const s = SND.ctx.createBufferSource(); s.buffer = SND.noise; s.loop = true; s.start(); return s; }
+function noiseSrc(kind="pink"){ const s = SND.ctx.createBufferSource(); s.buffer = SND.buf[kind]; s.loop = true; s.loopStart = Math.random(); s.start(0, Math.random()*3); return s; }
 function lfo(freq, depth, target){ const o = SND.ctx.createOscillator(), g = SND.ctx.createGain(); o.frequency.value = freq; g.gain.value = depth; o.connect(g).connect(target); o.start(); return o; }
+function filt(type, f, q=.7){ const x = SND.ctx.createBiquadFilter(); x.type = type; x.frequency.value = f; x.Q.value = q; return x; }
+const rand = (a,b) => a + Math.random()*(b-a);
+/* each ambience is a few quiet, recognisable layers */
 function makeAmb(kind){
   const ctx = SND.ctx, out = ctx.createGain(); out.gain.value = 0; out.connect(SND.master);
   const nodes = [], timers = [];
-  const filt = (type, f, q=1) => { const x = ctx.createBiquadFilter(); x.type = type; x.frequency.value = f; x.Q.value = q; return x; };
-  if (kind === "wind" || kind === "forest") {
-    const n = noiseSrc(), bp = filt("bandpass", 420, .7), g = ctx.createGain(); g.gain.value = .16;
-    n.connect(bp).connect(g).connect(out); nodes.push(n, lfo(.07, 260, bp.frequency), lfo(.11, .08, g.gain));
-    if (kind === "forest") timers.push(setInterval(() => { if (Math.random() < .5) chirp(out); }, 2600));
-  } else if (kind === "fire") {
-    const n = noiseSrc(), lp = filt("lowpass", 520), g = ctx.createGain(); g.gain.value = .12;
-    n.connect(lp).connect(g).connect(out); nodes.push(n, lfo(.3, .03, g.gain));
-    timers.push(setInterval(() => { for (let k = 0; k < 1 + (Math.random()*3|0); k++) crackle(out, k*0.04); }, 180));
+  const layer = (src, chain, vol) => { const g = ctx.createGain(); g.gain.value = vol; let n = src; for (const c of chain) n = n.connect(c); n.connect(g).connect(out); nodes.push(src); return g; };
+  const every = (fn, a, b) => { let t; const tick = () => { fn(); t = setTimeout(tick, rand(a, b)); timers.push(t); }; t = setTimeout(tick, rand(a, b)); timers.push(t); };
+  const gusts = (g, base, peak) => every(() => { const t = ctx.currentTime, up = rand(1.2, 3), hold = rand(.5, 2), down = rand(2, 4);
+      g.gain.cancelScheduledValues(t); g.gain.setTargetAtTime(rand(base, peak), t, up/3); g.gain.setTargetAtTime(base, t + up + hold, down/3); }, 4000, 9000);
+
+  if (kind === "fire" || kind === "hearth") {
+    /* low roar of the flames + soft hiss + crackles and the odd pop */
+    layer(noiseSrc("brown"), [filt("lowpass", 260)], .32);
+    const hiss = layer(noiseSrc("white"), [filt("highpass", 5200)], .006); nodes.push(lfo(.2, .003, hiss.gain));
+    every(() => { const n = 1 + (Math.random()*4|0); for (let k = 0; k < n; k++) crackle(out, k * rand(.015, .06), rand(.05, .22)); }, 90, 420);
+    every(() => crackle(out, 0, rand(.35, .55), 600), 2500, 7000);
+  } else if (kind === "wind" || kind === "forest") {
+    /* two moving bands of wind with slow gusts, a faint whistle on top */
+    const g1 = layer(noiseSrc("pink"), [Object.assign(filt("bandpass", 380, .6), {})], .22);
+    const bp = filt("bandpass", 900, 6); const g2 = layer(noiseSrc("white"), [bp], .012);
+    nodes.push(lfo(.05, 160, bp.frequency));
+    gusts(g1, .12, .34); gusts(g2, .004, .02);
+    if (kind === "forest") { layer(noiseSrc("pink"), [filt("highpass", 2500), filt("lowpass", 7000)], .015); every(() => birdSong(out), 3000, 9000); }
   } else if (kind === "rain") {
-    const n = noiseSrc(), hp = filt("highpass", 1400), lp = filt("lowpass", 7000), g = ctx.createGain(); g.gain.value = .07;
-    n.connect(hp).connect(lp).connect(g).connect(out); nodes.push(n);
-    const n2 = noiseSrc(), lp2 = filt("lowpass", 300), g2 = ctx.createGain(); g2.gain.value = .05; n2.connect(lp2).connect(g2).connect(out); nodes.push(n2);
+    /* steady patter, close drops, distant roll */
+    layer(noiseSrc("pink"), [filt("highpass", 900), filt("lowpass", 9000)], .09);
+    layer(noiseSrc("brown"), [filt("lowpass", 180)], .12);
+    every(() => { for (let k = 0; k < 3; k++) drop(out, k * rand(.02, .12)); }, 60, 220);
+    every(() => thunder(out), 15000, 30000);
   } else if (kind === "water") {
-    const n = noiseSrc(), bp = filt("bandpass", 600, .5), g = ctx.createGain(); g.gain.value = .11;
-    n.connect(bp).connect(g).connect(out); nodes.push(n, lfo(.09, 220, bp.frequency), lfo(.16, .05, g.gain));
-  } else { /* drone */
-    const lp = filt("lowpass", 340), g = ctx.createGain(); g.gain.value = .05; lp.connect(g).connect(out);
-    [55, 82.4, 110.3].forEach((f, k) => { const o = ctx.createOscillator(); o.type = k ? "sine" : "sawtooth"; o.frequency.value = f; o.detune.value = (k-1)*6; o.connect(lp); o.start(); nodes.push(o); });
-    nodes.push(lfo(.05, 120, lp.frequency));
-    const n = noiseSrc(), bp = filt("bandpass", 300, .6), gn = ctx.createGain(); gn.gain.value = .04; n.connect(bp).connect(gn).connect(out); nodes.push(n);
+    /* waves washing in and out */
+    const lp = filt("lowpass", 700); const g = layer(noiseSrc("pink"), [lp], .05);
+    every(() => { const t = ctx.currentTime, rise = rand(1.6, 2.6), fall = rand(2.4, 3.6), peak = rand(.22, .34);
+      g.gain.cancelScheduledValues(t); g.gain.setTargetAtTime(peak, t, rise/3); g.gain.setTargetAtTime(.04, t + rise, fall/3);
+      lp.frequency.cancelScheduledValues(t); lp.frequency.setTargetAtTime(1600, t, rise/3); lp.frequency.setTargetAtTime(600, t + rise, fall/3); }, 5000, 8000);
+    layer(noiseSrc("white"), [filt("bandpass", 3200, 1.5)], .008);
+  } else { /* drone: cavern air, a deep slow hum and far-off rumble */
+    layer(noiseSrc("brown"), [filt("lowpass", 140)], .22);
+    const hum = filt("lowpass", 220); const hg = ctx.createGain(); hg.gain.value = .045; hum.connect(hg).connect(out);
+    [55, 55.6, 82.4].forEach((f, k) => { const o = ctx.createOscillator(); o.type = k === 2 ? "triangle" : "sine"; o.frequency.value = f; o.connect(hum); o.start(); nodes.push(o); });
+    nodes.push(lfo(.03, .02, hg.gain));
+    const air = layer(noiseSrc("pink"), [filt("bandpass", 500, .8)], .05); gusts(air, .03, .08);
   }
-  out.gain.linearRampToValueAtTime(1, ctx.currentTime + 1.6);
-  return { stop(){ const t = ctx.currentTime; out.gain.cancelScheduledValues(t); out.gain.setValueAtTime(out.gain.value, t); out.gain.linearRampToValueAtTime(0, t + 1.2);
-    timers.forEach(clearInterval); setTimeout(() => { nodes.forEach(x => { try{ x.stop(); }catch{} }); out.disconnect(); }, 1400); } };
+  out.gain.setTargetAtTime(1, ctx.currentTime, .8);
+  return { stop(){ const t = ctx.currentTime; out.gain.cancelScheduledValues(t); out.gain.setTargetAtTime(0, t, .4);
+    timers.forEach(clearTimeout); timers.length = 0; setTimeout(() => { nodes.forEach(x => { try{ x.stop(); }catch{} }); out.disconnect(); }, 2000); } };
 }
-function crackle(dest, delay){
-  const ctx = SND.ctx, s = ctx.createBufferSource(); s.buffer = SND.noise;
-  const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1800 + Math.random()*2500;
-  const g = ctx.createGain(), t = ctx.currentTime + delay + Math.random()*.15;
-  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.12 + Math.random()*.2, t + .002); g.gain.exponentialRampToValueAtTime(.001, t + .03 + Math.random()*.05);
-  s.connect(hp).connect(g).connect(dest); s.start(t, Math.random()*2, .12);
+function crackle(dest, delay, vol, lowest=1500){
+  const ctx = SND.ctx, s = ctx.createBufferSource(); s.buffer = SND.buf.white;
+  const bp = filt("bandpass", rand(lowest, lowest*3), rand(1, 4));
+  const g = ctx.createGain(), t = ctx.currentTime + delay, d = rand(.006, .025);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .0015); g.gain.exponentialRampToValueAtTime(.0005, t + d);
+  s.connect(bp).connect(g).connect(dest); s.start(t, Math.random()*3, d + .02);
 }
-function chirp(dest){
-  const ctx = SND.ctx, o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;
-  const f = 2200 + Math.random()*1400; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f*1.4, t + .08); o.frequency.exponentialRampToValueAtTime(f*.9, t + .16);
-  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.025, t + .02); g.gain.exponentialRampToValueAtTime(.0005, t + .2);
-  o.connect(g).connect(dest); o.start(t); o.stop(t + .25);
+function drop(dest, delay){
+  const ctx = SND.ctx, o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + delay, f = rand(2500, 5500);
+  o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f*.6, t + .03);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(rand(.008, .03), t + .002); g.gain.exponentialRampToValueAtTime(.0003, t + .04);
+  o.connect(g).connect(dest); o.start(t); o.stop(t + .06);
+}
+function thunder(dest){
+  const ctx = SND.ctx, s = ctx.createBufferSource(); s.buffer = SND.buf.brown;
+  const lp = filt("lowpass", 120), g = ctx.createGain(), t = ctx.currentTime;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.35, t + .8); g.gain.setTargetAtTime(0, t + 1.5, 1.5);
+  s.connect(lp).connect(g).connect(dest); s.start(t, Math.random()*2, 7);
+}
+function birdSong(dest){
+  const ctx = SND.ctx, n = 2 + (Math.random()*4|0), base = rand(2400, 3800), t0 = ctx.currentTime;
+  for (let k = 0; k < n; k++) {
+    const o = ctx.createOscillator(), g = ctx.createGain(), t = t0 + k * rand(.09, .16), f = base * rand(.9, 1.15);
+    o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * rand(1.2, 1.5), t + .05); o.frequency.exponentialRampToValueAtTime(f * .85, t + .1);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.012, t + .015); g.gain.exponentialRampToValueAtTime(.0003, t + .12);
+    o.connect(g).connect(dest); o.start(t); o.stop(t + .14);
+  }
 }
 function setAmbience(){
   if (!SND.on || !audio()) return;
