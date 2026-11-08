@@ -421,15 +421,15 @@ body.txing::after{display:none}
 /* ===== One-line publish switch: tales listed here are open to everyone. ===== */
 /* Tales open to everyone, in the order they were posted on Instagram. The tree grows in this order and numbers tales by it.
    Tales not listed are hidden from the public (the owner sees them at the top as drafts). */
-const POSTED = [1,2,4,8,9,10,5,3,13,11,12,6,15,7,20,22,23];
+const POSTED = [1,2,4,8,9,10,5,3,13,11,12,6,15,7,20,22,23,25];
 /* Never shown anywhere (tests, retired). */
 const HIDDEN = [17];
 
 const IG = "https://www.instagram.com/oldbladesociety/";
-const ACC = {1:"#c9a14a",2:"#d0603a",3:"#d8b45a",4:"#8fa37a",5:"#b2453a",6:"#c0703a",7:"#4f9a8a",8:"#c4572e",9:"#b88ac0",10:"#c9a14a",11:"#6fa0c8",12:"#b0503c",13:"#8c6aa8",14:"#d4b48a",15:"#b58a3c",16:"#d6904a",17:"#6aa8a0",18:"#d4a24a",19:"#c87a3a",20:"#c9a14a",21:"#5fb0b0",22:"#e07a3a",23:"#6f9a5a"};
+const ACC = {1:"#c9a14a",2:"#d0603a",3:"#d8b45a",4:"#8fa37a",5:"#b2453a",6:"#c0703a",7:"#4f9a8a",8:"#c4572e",9:"#b88ac0",10:"#c9a14a",11:"#6fa0c8",12:"#b0503c",13:"#8c6aa8",14:"#d4b48a",15:"#b58a3c",16:"#d6904a",17:"#6aa8a0",18:"#d4a24a",19:"#c87a3a",20:"#c9a14a",21:"#5fb0b0",22:"#e07a3a",23:"#6f9a5a",25:"#b8483a"};
 
 /* Chapters unseal when their sequel is posted: "parentTale:chapterId" -> sequel tale number (that tale must also be in POSTED). */
-const RELEASED = { /* "22:fully-grown": 24 */ };
+const RELEASED = { "1:orders-war": 25 /* , "22:fully-grown": 24 */ };
 const EPS = [
  {n:1,t:"The Six Oaths",hook:"The Old King Is Dead. Which Order Do You And Bro Swear To?",
   o:["The Dawn Watch","The Frost Oath","The Rose Court","The Tide Sworn","The Grave Wardens","The Hex Circle"],
@@ -589,6 +589,13 @@ const EPS = [
   next:[["path-gone","The Vanished Trail","You and bro wake to find the trail you followed in has vanished overnight."],
         ["forest-keeper","The Eyes Of The Wood","Something old lives at the heart of the wood, and it has noticed you."],
         ["road-end","The Silent City","You finally reach the kingdom's gates. They're open, and the city is silent."]]},
+ {n:25,t:"When Banners Bleed",hook:"You Swore Your Oath. Now The War Has Come. Where Do You And Bro Make Your Stand?",
+  o:["The Dawn Watch","The Frost Oath","The Rose Court","The Tide Sworn","The Grave Wardens","The Hex Circle"],
+  s:["Hold The Pass","Break The Ice","Break The Siege","Ram The Black Fleet","Wake The Fallen","Raise The Crystal Wall"],
+  cap:["Six banners rode out the night the old king was buried. By dawn, every oath sworn in the great hall had been called, and every order had found its war."],
+  next:[["empty-throne","The Empty Throne","The fighting stops at the palace doors. Six orders, one throne, and nobody willing to kneel."],
+        ["oathbreaker","The First To Break","One order lays down its banner in the night. Nobody knows which, until the morning."],
+        ["after-war","What The Crows Leave","When the war ends, you and bro walk the field looking for the friends you rode in with."]]},
 ];
 const BY = Object.fromEntries(EPS.map(e=>[e.n,e]));
 

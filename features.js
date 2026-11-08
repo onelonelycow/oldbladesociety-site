@@ -250,7 +250,7 @@ function renderVault(){
 
 /* ======================= AMBIENT SOUND (synthesised, no files) ======================= */
 const SND = { on: LS.get("obs_sound", false), ctx: null, master: null, cur: null, noise: null };
-const AMB = { 1:"wind",2:"wind",3:"water",4:"wind",5:"drone",6:"fire",7:"fire",8:"wind",9:"drone",10:"fire",11:"wind",12:"rain",13:"drone",14:"drone",15:"fire",16:"fire",18:"wind",19:"fire",20:"drone",21:"water",22:"fire",23:"forest" };
+const AMB = { 1:"wind",2:"wind",3:"water",4:"wind",5:"drone",6:"fire",7:"fire",8:"wind",9:"drone",10:"fire",11:"wind",12:"rain",13:"drone",14:"drone",15:"fire",16:"fire",18:"wind",19:"fire",20:"drone",21:"water",22:"fire",23:"forest",25:"wind" };
 function audio(){
   if (SND.ctx) return SND.ctx;
   const C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
