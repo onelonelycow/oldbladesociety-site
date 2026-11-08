@@ -120,11 +120,13 @@ a.plaque:hover{border-color:var(--acc);color:var(--gilt-hi)}
 .sealed .plaque{color:var(--vellum-dim)}
 .sealed-note{font-style:italic;font-size:13px;color:var(--vellum-dim);margin-top:4px;line-height:1.3}
 
-.twigs{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;width:100%;align-items:center}
-.twig{display:flex;align-items:center;gap:6px;font-size:13px;line-height:1.25;color:var(--vellum-dim);text-decoration:none;max-width:100%}
-.twig .bud{flex:none;width:8px;height:8px;border-radius:50%;border:1px dashed var(--vellum-dim);opacity:.8}
-.twig .tt{opacity:.75;font-style:italic;min-width:0}
-.twig .cnt{flex:none;font-family:var(--f-title);font-size:10px;letter-spacing:.06em;color:var(--vellum-dim);opacity:.85;font-variant-numeric:tabular-nums}
+.twigs{list-style:none;margin:10px auto 0;padding:0;display:flex;flex-direction:column;gap:5px;width:min(100%,232px);text-align:left}
+.twig{display:grid;grid-template-columns:10px minmax(0,1fr) auto;column-gap:8px;align-items:center;font-size:13.5px;line-height:1.3;color:var(--vellum-dim);text-decoration:none}
+.twig .bud{width:8px;height:8px;border-radius:50%;border:1px dashed var(--vellum-dim);opacity:.8;justify-self:center}
+.twig .tt{opacity:.8;font-style:italic;min-width:0}
+.twig .cnt{font-family:var(--f-title);font-size:10px;letter-spacing:.04em;color:var(--ink);background:var(--acc);border-radius:8px;padding:1px 6px;font-variant-numeric:tabular-nums;line-height:1.4}
+.twig .cnt:empty{display:none}
+.twig.lit .cnt{background:none;color:var(--gilt);padding:0;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
 .twig.mine .bud{border-style:solid;border-color:var(--acc);background:var(--acc)}
 .twig.mine .tt{opacity:1;color:var(--vellum)}
 .twig.lit{color:var(--vellum)}
@@ -166,7 +168,7 @@ section.sec{margin-top:clamp(34px,4.5vw,46px)}
 .chronicle{margin-top:16px;padding:clamp(20px,4vw,40px) clamp(18px,5vw,56px);border:1px solid var(--line);border-radius:2px;
   background:radial-gradient(ellipse 80% 60% at 50% 0%,color-mix(in srgb,var(--acc) 7%,transparent),transparent 70%),linear-gradient(180deg,rgba(28,20,13,.78),rgba(14,9,6,.78));
   box-shadow:inset 0 0 0 4px rgba(18,12,8,.9),inset 0 0 0 5px rgba(201,161,74,.14)}
-.chronicle .leaf{max-width:68ch;margin:0 auto;font-size:clamp(18px,2.1vw,20px);line-height:1.65;display:flow-root}
+.chronicle .leaf{max-width:68ch;margin:0;font-size:clamp(18px,2.1vw,20px);line-height:1.65;display:flow-root}
 .chronicle p{margin:0 0 1em}
 .chronicle p:last-child{margin-bottom:0}
 .illum{float:left;width:calc(3 * 1.65em + 6px);aspect-ratio:1;margin:.28em .7em .2em 0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.55)) drop-shadow(0 0 14px color-mix(in srgb,var(--acc) 22%,transparent))}
@@ -212,6 +214,17 @@ section.sec{margin-top:clamp(34px,4.5vw,46px)}
 .sealed-page p{font-style:italic;color:var(--vellum-dim);font-size:19px}
 
 @media (max-width:720px){
+  /* tree: trunk on the left, every tale on one side as a medallion + text card */
+  .tree{--trunk:14px}
+  .tree::before{left:20px;transform:none}
+  .row,.row:first-child{grid-template-columns:34px minmax(0,1fr);margin-top:0;padding-block:12px}
+  .row .limb,.row.L .limb,.row.R .limb{grid-column:2;justify-content:flex-start;--med:84px;--nw:auto}
+  .row .bough,.row.L .bough,.row.R .bough{order:-1;flex:0 0 22px;margin:calc(var(--med)/2 - 5px) 0 0 -14px;height:10px;clip-path:polygon(0 0,100% 30%,100% 70%,0 100%)}
+  .node{flex:1;width:auto;display:grid;grid-template-columns:var(--med) minmax(0,1fr);column-gap:16px;align-items:start;text-align:left}
+  .node .med{grid-row:1/span 3}
+  .node .plaque{margin-top:6px;justify-self:start}
+  .node .twigs{grid-column:2;margin:10px 0 0;width:100%}
+  .node .sealed-note{grid-column:2}
   .hero{grid-template-columns:1fr;justify-items:center;text-align:center}
   .hero .frame{width:min(250px,70vw)}
   .hook{margin-inline:auto}
@@ -593,7 +606,8 @@ function paintVotes(){
   document.querySelectorAll("[data-cnt]").forEach(el=>{
     const [ek,id] = el.dataset.cnt.split(":");
     const c = (S.counts[ek]||{})[id]||0;
-    el.textContent = live ? (el.closest(".twig") ? `${c} ${c===1?"vote":"votes"}` : `${c} ${c===1?"vote":"votes"}`) : (el.closest(".twig") ? "" : "");
+    const tw = el.closest(".twig");
+    el.textContent = !live ? "" : tw ? (c ? `${c}` : "") : `${c} ${c===1?"vote":"votes"}`;
   });
   document.querySelectorAll("[data-twig]").forEach(el=>{
     const [ek,id] = el.dataset.twig.split(":");
