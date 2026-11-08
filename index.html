@@ -234,13 +234,32 @@ section.sec{margin-top:clamp(34px,4.5vw,46px)}
   .row{margin-top:-8px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.owner-band a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+.tally{max-width:860px;margin:0 auto;padding:28px 16px 64px}
+.tally h1{font-family:var(--f-deco);color:var(--gilt);font-size:clamp(28px,5vw,44px);margin:6px 0 4px;text-align:center}
+.tally .sum{text-align:center;color:var(--vellum);opacity:.85;margin:0 0 26px}
+.tally .top{border:1px solid var(--line);background:rgba(0,0,0,.25);padding:14px 18px;margin:0 0 28px}
+.tally .top h2,.tally .ep h2{font-family:var(--f-title);font-size:16px;letter-spacing:.08em;color:var(--gilt);margin:0 0 10px;text-transform:uppercase}
+.tally .ep{border-top:1px solid var(--line);padding:16px 0}
+.tally .ep h2 a{color:inherit;text-decoration:none}
+.tally .ep h2 small{color:var(--vellum-dim);letter-spacing:.04em;font-size:12px;margin-left:8px}
+.tally .ln{display:grid;grid-template-columns:minmax(0,1fr) clamp(56px,18vw,140px) auto;gap:12px;align-items:center;padding:4px 0;color:var(--vellum);font-size:15px}
+.tally .ln .bar{height:6px;background:rgba(255,255,255,.07);position:relative}
+.tally .ln .bar i{position:absolute;inset:0 auto 0 0;background:var(--acc,var(--gilt))}
+.tally .ln .n{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--f-title);font-size:13px}
+.tally .ln.lead{color:var(--gilt-hi)}
+.tally .ln.lead .t::after{content:"  ✦ leading";font-family:var(--f-title);font-size:10px;letter-spacing:.12em;color:var(--gilt);text-transform:uppercase}
+.tally .none{color:var(--vellum-dim);font-size:14px}
+.tally .crumbs a{font-family:var(--f-title);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gilt);text-decoration:none}
+.tally .sealedtag{font-size:10px;letter-spacing:.14em;color:var(--vellum-dim);text-transform:uppercase;margin-left:8px}
 </style>
 </head><body>
 
 
 <div class="vignette" aria-hidden="true"></div>
 <div id="bd" class="backdrop" hidden aria-hidden="true"></div>
-<div id="band" class="owner-band" hidden>Owner preview — sealed tales are open to you only</div>
+<div id="band" class="owner-band" hidden>Owner preview — sealed tales are open to you only · <a href="#results">Vote tally →</a></div>
 <div id="app" class="wrap"></div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -667,12 +686,34 @@ document.addEventListener("click", ev=>{
   if (b) castVote(+b.dataset.ep, b.dataset.vote);
 });
 
-/* ===== router (plain #name hashes: #tree, #ep-22) ===== */
+
+/* ===== owner vote tally (#results) ===== */
+function renderResults(){
+  if (!S.owner){ renderTree(); return; }
+  const all=[]; let total=0;
+  const eps=[...EPS].filter(e=>e.next&&e.next.length).sort((a,b)=>b.n-a.n);
+  const blocks=eps.map(e=>{
+    const t=S.counts["e"+e.n]||{}; const sum=Object.values(t).reduce((a,b)=>a+b,0); total+=sum;
+    const rows=e.next.map(([id,title])=>({id,title,c:t[id]||0})).sort((a,b)=>b.c-a.c);
+    rows.forEach(r=>{ if(r.c) all.push({...r,ep:e}); });
+    const max=rows[0].c;
+    const lines=rows.map(r=>`<div class="ln${r.c&&r.c===max?" lead":""}"><span class="t">${esc(r.title)}</span><span class="bar"><i style="width:${sum?Math.round(r.c*100/sum):0}%"></i></span><span class="n">${r.c} · ${sum?Math.round(r.c*100/sum):0}%</span></div>`).join("");
+    return `<section class="ep" style="--acc:${ACC[e.n]}"><h2><a href="#ep-${e.n}">Tale ${roman(e.n)} · ${esc(e.t)}</a><small>${sum} vote${sum===1?"":"s"}</small>${POSTED.includes(e.n)?"":'<span class="sealedtag">sealed</span>'}</h2>${lines}</section>`;
+  }).join("");
+  all.sort((a,b)=>b.c-a.c);
+  const top=all.slice(0,5).map(r=>`<div class="ln" style="--acc:${ACC[r.ep.n]}"><span class="t">${esc(r.title)} <span style="opacity:.6">— Tale ${roman(r.ep.n)}</span></span><span class="bar"><i style="width:${all[0]?Math.round(r.c*100/all[0].c):0}%"></i></span><span class="n">${r.c}</span></div>`).join("") || '<div class="none">No votes yet.</div>';
+  const live = S.vote==="live";
+  app.innerHTML=`<div class="tally"><div class="crumbs"><a href="#tree">← The Tree</a></div><h1>The Vote Tally</h1>
+    <p class="sum">${live?`${total} vote${total===1?"":"s"} cast across all tales · refreshes every 20 seconds`:"Gathering the votes…"}</p>
+    <div class="top"><h2>Most wanted next chapters</h2>${top}</div>${blocks}</div>`;
+}
+/* ===== router (plain #name hashes: #tree, #ep-22, #results) ===== */
 const app = document.getElementById("app"), bd = document.getElementById("bd");
 function route(){
   const m = /^#ep-(\d+)$/.exec(location.hash);
   S.note = "";
   if (m) { renderEp(+m[1]); window.scrollTo(0,0); }
+  else if (location.hash==="#results") { renderResults(); window.scrollTo(0,0); }
   else renderTree();
 }
 window.addEventListener("hashchange", route);
@@ -696,7 +737,7 @@ async function refresh(){
     const counts={}; for(const r of rows||[]) (counts["e"+r.ep] ||= {})[r.choice]=Number(r.n);
     S.counts=counts; S.vote="live";
   }catch{ if(S.vote!=="live") S.vote="unavailable"; }
-  paintVotes();
+  if (location.hash==="#results") renderResults(); else paintVotes();
 }
 (async ()=>{
   try{ const q=new URLSearchParams(location.search); if(q.get("owner")==="ashenthrone"){localStorage.setItem("obs_owner","1")} if(localStorage.getItem("obs_owner")==="1"){S.owner=true;document.getElementById("band").hidden=false;route();} }catch{}
