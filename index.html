@@ -501,7 +501,7 @@ function renderTree(){
            <a class="plaque" href="#ep-${e.n}">${esc(e.t)}</a>${twigsHTML(e)}</div>`
       : `<div class="node sealed" style="${style}">
            <div class="med" role="img" aria-label="Tale ${e.n}, sealed"><img src="${img(e.n,0)}" alt="" loading="lazy" decoding="async">${SEAL}<span class="num">${roman(e.n)}</span></div>
-           <div class="plaque">Sealed</div><div class="sealed-note">Unveils soon on Instagram</div></div>`;
+           <div class="plaque">Sealed</div></div>`;
     return `<div class="row ${side}"><div class="limb">${side==="R"?'<div class="bough"></div>':""}${node}${side==="L"?'<div class="bough"></div>':""}</div></div>`;
   }).join("");
   app.innerHTML = `
