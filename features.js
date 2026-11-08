@@ -86,9 +86,10 @@ function paintTreePath(){
     let pr = crest.querySelector(".path-prog");
     if (!pr) { pr = document.createElement("div"); pr.className = "path-prog"; crest.appendChild(pr); }
     pr.innerHTML = done
-      ? `<div class="pp-k">Your Path</div><div class="pp-bar"><i style="width:${Math.round(done*100/tales.length)}%"></i></div>
-         <div class="pp-t">${done} of ${tales.length} tales chosen${done >= 3 ? ` · <button type="button" class="pp-legend" data-legend>Forge your Legend card</button>` : ""}</div>`
-      : `<div class="pp-t">Open a tale and choose your path. Your choices will light up the tree.</div>`;
+      ? `<div class="pp-pips" aria-hidden="true">${tales.map(n => `<i class="${P.mine[n] !== undefined ? "on" : ""}"></i>`).join("")}</div>
+         <div class="pp-t">${done} of ${tales.length} tales walked${done >= 3 ? ` · <button type="button" class="pp-legend" data-legend>Forge your Legend</button>` : ""}</div>`
+      : "";
+    pr.hidden = !done;
   }
   $$(".tree .node").forEach(node => {
     const a = node.querySelector("a.med"); if (!a) return;
@@ -285,7 +286,7 @@ function makeAmb(kind){
 
   if (kind === "fire" || kind === "hearth") {
     /* low roar of the flames + soft hiss + crackles and the odd pop */
-    layer(noiseSrc("brown"), [filt("lowpass", 260)], .32);
+    layer(noiseSrc("brown"), [filt("lowpass", 260)], .14);
     const hiss = layer(noiseSrc("white"), [filt("highpass", 5200)], .006); nodes.push(lfo(.2, .003, hiss.gain));
     every(() => { const n = 1 + (Math.random()*4|0); for (let k = 0; k < n; k++) crackle(out, k * rand(.015, .06), rand(.05, .22)); }, 90, 420);
     every(() => crackle(out, 0, rand(.35, .55), 600), 2500, 7000);
@@ -304,17 +305,17 @@ function makeAmb(kind){
     every(() => thunder(out), 15000, 30000);
   } else if (kind === "water") {
     /* waves washing in and out */
-    const lp = filt("lowpass", 700); const g = layer(noiseSrc("pink"), [lp], .05);
-    every(() => { const t = ctx.currentTime, rise = rand(1.6, 2.6), fall = rand(2.4, 3.6), peak = rand(.22, .34);
-      g.gain.cancelScheduledValues(t); g.gain.setTargetAtTime(peak, t, rise/3); g.gain.setTargetAtTime(.04, t + rise, fall/3);
+    const lp = filt("lowpass", 700); const g = layer(noiseSrc("pink"), [lp], .12);
+    every(() => { const t = ctx.currentTime, rise = rand(1.6, 2.6), fall = rand(2.4, 3.6), peak = rand(.5, .75);
+      g.gain.cancelScheduledValues(t); g.gain.setTargetAtTime(peak, t, rise/3); g.gain.setTargetAtTime(.12, t + rise, fall/3);
       lp.frequency.cancelScheduledValues(t); lp.frequency.setTargetAtTime(1600, t, rise/3); lp.frequency.setTargetAtTime(600, t + rise, fall/3); }, 5000, 8000);
     layer(noiseSrc("white"), [filt("bandpass", 3200, 1.5)], .008);
   } else { /* drone: cavern air, a deep slow hum and far-off rumble */
-    layer(noiseSrc("brown"), [filt("lowpass", 140)], .22);
-    const hum = filt("lowpass", 220); const hg = ctx.createGain(); hg.gain.value = .045; hum.connect(hg).connect(out);
+    layer(noiseSrc("brown"), [filt("lowpass", 140)], .035);
+    const hum = filt("lowpass", 220); const hg = ctx.createGain(); hg.gain.value = .006; hum.connect(hg).connect(out);
     [55, 55.6, 82.4].forEach((f, k) => { const o = ctx.createOscillator(); o.type = k === 2 ? "triangle" : "sine"; o.frequency.value = f; o.connect(hum); o.start(); nodes.push(o); });
-    nodes.push(lfo(.03, .02, hg.gain));
-    const air = layer(noiseSrc("pink"), [filt("bandpass", 500, .8)], .05); gusts(air, .03, .08);
+    nodes.push(lfo(.03, .003, hg.gain));
+    const air = layer(noiseSrc("pink"), [filt("bandpass", 500, .8)], .08); gusts(air, .05, .12);
   }
   out.gain.setTargetAtTime(1, ctx.currentTime, .8);
   return { stop(){ const t = ctx.currentTime; out.gain.cancelScheduledValues(t); out.gain.setTargetAtTime(0, t, .4);
