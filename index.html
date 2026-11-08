@@ -916,18 +916,18 @@ function playReturn(n){
   const vines=growVines(svg,cx,cy,D/2,acc);
   vines.forEach(([p])=>{ const L=p.getTotalLength(); p.style.strokeDasharray=L; p.style.strokeDashoffset=0; p._L=L; });
   /* fade in over the tale with the vines already spread */
-  tx.animate([{opacity:0},{opacity:1}],{duration:380,fill:"forwards",easing:"ease-out"});
+  const intro = tx.animate([{opacity:0},{opacity:1}],{duration:380,fill:"forwards",easing:"ease-out"});
   veil.animate([{opacity:0},{opacity:1}],{duration:380,fill:"forwards"});
   disc.animate([{transform:"scale(.85)",opacity:0},{transform:"scale(1)",opacity:1}],{duration:380,fill:"forwards",easing:"ease-out"});
   cap.animate([{opacity:0},{opacity:1}],{duration:300,fill:"forwards"});
   const ease="cubic-bezier(.55,0,.25,1)";
-  setTimeout(()=>{
+  const safety=setTimeout(()=>{ if(TX_BUSY){ tx.hidden=true; tx.innerHTML=""; TX_BUSY=false; document.body.classList.remove("txing"); if(location.hash!=="#tree") location.hash="#tree"; } }, 6000);
+  intro.finished.then(()=>new Promise(r=>setTimeout(r,120))).then(()=>{
     /* vines retract into the medallion, outermost twigs first */
-    let longest=0;
-    vines.forEach(([p,delay])=>{ const dur=620, dl=(0.6-Math.min(delay,0.6))*500; longest=Math.max(longest,dur+dl);
-      p.animate([{strokeDashoffset:0},{strokeDashoffset:p._L}],{duration:dur,delay:dl,fill:"forwards",easing:"cubic-bezier(.5,0,.6,1)"}); });
+    const anims = vines.map(([p,delay])=>{ const dur=620, dl=(0.6-Math.min(delay,0.6))*500;
+      return p.animate([{strokeDashoffset:0},{strokeDashoffset:p._L}],{duration:dur,delay:dl,fill:"forwards",easing:"cubic-bezier(.5,0,.6,1)"}); });
     cap.animate([{opacity:1},{opacity:0,transform:"translateY(8px)"}],{duration:300,fill:"forwards"});
-    setTimeout(()=>{
+    Promise.all(anims.map(a=>a.finished)).then(()=>{
       location.hash="#tree";
       requestAnimationFrame(()=>{
         const med=document.querySelector(`.tree a.med[href="#ep-${n}"]`);
@@ -941,11 +941,11 @@ function playReturn(n){
         veil.animate([{opacity:1},{opacity:0}],{duration:620,fill:"forwards",easing:"ease-in-out"});
         fly.finished.then(()=>{
           if (med){ med.style.visibility=""; med.animate([{boxShadow:`0 0 0 1px rgba(0,0,0,.6),0 0 46px ${acc}`},{}],{duration:700,easing:"ease-out"}); }
-          tx.hidden=true; tx.innerHTML=""; tx.getAnimations?.().forEach(a=>a.cancel()); TX_BUSY=false; document.body.classList.remove("txing");
+          clearTimeout(safety); tx.hidden=true; tx.innerHTML=""; tx.getAnimations?.().forEach(a=>a.cancel()); TX_BUSY=false; document.body.classList.remove("txing");
         });
       });
-    }, longest*0.85);
-  }, 420);
+    });
+  });
 }
 document.addEventListener("click",ev=>{
   const a=ev.target.closest('a[href="#tree"]');
