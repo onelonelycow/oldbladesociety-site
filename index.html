@@ -273,6 +273,7 @@ section.sec{margin-top:clamp(34px,4.5vw,46px)}
 .chap.released .go{color:var(--gilt)}
 .twig.locked{opacity:.55;filter:grayscale(1)}
 .twig.locked .bud{border-style:dashed}
+.opt figcaption small{display:block;margin-top:3px;font-family:var(--f-body);font-size:13.5px;letter-spacing:.01em;text-transform:none;color:var(--vellum);opacity:.7;line-height:1.3}
 </style>
 </head><body>
 
@@ -318,7 +319,7 @@ const EPS = [
         ["other-hunters","Five Hands In The Dark","Five blades are still out there. Whoever found them is coming for yours."],
         ["seventh-blade","The Unbroken Sword","The old smiths say the six were broken from a single sword. Someone means to make it whole."]]},
  {n:3,t:"The Gilded Reward",hook:"You Saved The Kingdom. Claim One Palace As Your Reward.",
-  o:["The Sky Throne","The Sunken Crown","The Crystal Deep","The Falls Of Jade","The Canyon Court","The Lagoon Court"],
+  o:["Skyreach", "Tidecrown", "Sapphirehold", "Jadefall", "Redspire", "Sunhaven"],s:["The Sky Throne", "The Sunken Crown", "The Crystal Deep", "The Falls Of Jade", "The Canyon Court", "The Lagoon Court"],
   cap:["You Saved The Kingdom And The Queen Offers You One Palace. Which One Are You Claiming?"],
   next:[["palace-curse","What Walks The Lower Halls","The servants won't stay past dusk. Something in the lower halls still thinks it owns the place."],
         ["queens-price","The Sealed Favour","No reward is free. The queen's envoy arrives with a sealed letter and a favour to collect."],
@@ -330,37 +331,37 @@ const EPS = [
         ["beast-collector","The Man In The Trophy Coat","A hunter in a coat of trophies keeps companions in cages. Yours is the one he wants next."],
         ["pack-calls","Howls From The Hills","Your companion hears its own kind howling in the hills. It has to choose between them and you."]]},
  {n:5,t:"The Shattered Mantle",hook:"Your Armour Was Shattered. Which Set Do You Claim Next?",
-  o:["Valdris","Vyrn (The Dragon's Hide)","Hrothgar","Aurelian","Morwen","Nyx"],
+  o:["Valdris", "Vyrn", "Hrothgar", "Aurelian", "Morwen", "Nyx"],s:["Knight Of The Crypt", "The Dragon's Hide", "Raider Of The Shore", "The Golden Lion", "Armour Of Thorns", "Knight Of The Void"],
   cap:["Your Armour Was Shattered In The Last Battle. Which Set Are You Claiming Next?"],
   next:[["armour-ghost","Breath Inside The Helm","The armour still remembers the knight who died in it. At night you hear him breathing inside the helm."],
         ["smith-returns","The Forge Remembers","The one who forged your set is alive, and says it was never meant to leave the forge."],
         ["trial-by-combat","Challenge At The Old Stones","A champion challenges whoever wears the set to single combat at the old stones."]]},
  {n:6,t:"The Empty Seat",hook:"Your Party Needs One More Member. Who Are You Recruiting?",
-  o:["Kael the Sellsword","Isolde Witch of the Fen","Corvin the Plague Doctor","Seraphine the Dawn Paladin","Ash Hunter of the Frost","Lyra the Storm Bard","Brann the Headsman","Velkan Lord of the Grave"],
+  o:["Kael", "Isolde", "Corvin", "Seraphine", "Ash", "Lyra", "Brann", "Velkan"],s:["The Sellsword", "Witch Of The Fen", "The Plague Doctor", "The Dawn Paladin", "Hunter Of The Frost", "The Storm Bard", "The Headsman", "Lord Of The Grave"],
   cap:["Your Party Is One Member Short And The Road Ahead Is Dark. Who Are You Recruiting?"],
   next:[["first-job","Blood On The First Coin","Your new party takes its first contract. Nothing about it goes to plan."],
         ["campfire-knife","The Knife By Firelight","One of your recruits was paid to bring you down before the road ends."],
         ["rival-party","Hounds On The Same Trail","Another party is chasing the same bounty, and they've done this before."]]},
  {n:7,t:"The Old Ones",hook:"An Ancient Evil Has Risen. You Can Wake Only One.",
-  o:["The Drowned King","Old Hollowroot","The Ember Wyrm","The Frost Titan","The Stone Colossus","The Sleeping Egg"],
+  o:["The Drowned King", "Old Hollowroot", "The Ember Wyrm", "The Frost Titan", "The Stone Colossus", "The Sleeping Egg"],s:["But The Coasts Will Flood", "But The Forest Takes Every City", "But It Must Feed Each Winter", "But Summer Never Returns", "But It Only Obeys A King", "No One Knows What Hatches"],
   cap:["An Ancient Evil Has Risen And The Realm Is Falling. You Can Wake Only One Of The Old Ones, But Every One Comes With A Price."],
   next:[["price-due","The Debt Of The Deep","The Old One you woke kept its promise. Now it wants payment, and it isn't gold."],
         ["second-wakes","The Second Sleeper Stirs","The Old Ones you left sleeping heard the first one rise. One of them is stirring anyway."],
         ["evil-bargains","The Velvet Offer","The ancient evil sends an envoy to you and bro with an offer. It's a very good offer."]]},
  {n:8,t:"Blood Brothers",hook:"You And Your Bro Are Going To War. Which Duo Are You?",
-  o:["Iron & Ember","Blade & Shadow","Hoof & Arrow","Storm & Steel","Oath & Axe","Crown & Banner"],
+  o:["Iron & Ember", "Blade & Shadow", "Hoof & Arrow", "Storm & Steel", "Oath & Axe", "Crown & Banner"],s:["The Shieldwall Brothers", "The Knight And The Knife", "The Steppe Riders", "The Mage And The Blade", "The Raider Brothers", "The Last Two Kings"],
   cap:["You And Your Bro Are Riding Into The Last War Of The Realm. Which Duo Are You Two?"],
   next:[["last-charge","Into The Spears","The horns sound for the final charge. You ride side by side into the line."],
         ["one-rides-home","The Riderless Horse","The war is won, but only one horse comes back through the gate."],
         ["mirror-duo","The Shadow Pair","On the other side of the field is a duo exactly like yours, and they've never lost."]]},
  {n:9,t:"The Queen's Mantle",hook:"The Queen Has Fallen. Choose The Armour You'll Lead Her Army In.",
-  o:["Aurelia","Morrigan","Lys","Ysolde","Selene","Nerys"],
+  o:["Aurelia", "Morrigan", "Lys", "Ysolde", "Selene", "Nerys"],s:["The Sunlit Valkyrie", "Queen Of Crows", "Knight Of The Rose", "The Widow Knight", "The Moon Warden", "The Serpent Queen"],
   cap:["The Queen Has Fallen And Her Army Has No One Left To Follow. Which Armour Are You Leading Them In?"],
   next:[["queen-lives","The Queen Beneath The Mountain","She wasn't killed. She was taken, and the army now marches to bring her back."],
         ["crown-offered","The Weight Of Gold","You led them to victory. Now the council wants you on the throne."],
         ["sister-claims","The Sister's Banners","The fallen queen's sister arrives with a foreign army and a better claim than yours."]]},
  {n:10,t:"The Sealed Scrolls",hook:"Six Sealed Quests Arrived At Dawn. You Can Accept Only One.",
-  o:["Storm The Black Tower","Hunt The White Stag","Find The Lost City","Break The Siege","Sail To The World's Edge","Seal The Abyss"],
+  o:["Storm The Black Tower", "Hunt The White Stag", "Find The Lost City", "Break The Siege", "Sail To The World's Edge", "Seal The Abyss"],s:["Reward: The Sorcerer's Crown", "Reward: One Wish", "Reward: Endless Gold", "Reward: A Lordship", "Reward: Eternal Glory", "Reward: Unknown"],
   cap:["Six Sealed Quests Arrived At Dawn, But The Realm Can Only Spare You For One."],
   next:[["quest-wrong","Past The Last Road","The map lied, the guide fled, and you and bro are three days past the last road."],
         ["refused-quests","The Unopened Five","The five scrolls you left unopened didn't wait for you. Now their trouble is at the door."],
@@ -439,7 +440,7 @@ const EPS = [
         ["enemy-early","The Fires Go Dark","Halfway through the night, the watchfires on the ridge go out one by one."],
         ["night-vow","The Promise In The Dark","Years later, one of you has to keep the promise made on the last night."]]},
  {n:20,t:"The Steward's Ledger",hook:"A Kingdom Is Hiring. You And Your Bro Can Take One Contract. Which One?",
-  o:["Hunt The White Stag","Raise The Sunken Crown","Rob The Merchant Prince","Escort The Witch Queen","Steal The Necromancer's Heart","Hold The Mountain Pass"],
+  o:["Hunt The White Stag", "Raise The Sunken Crown", "Rob The Merchant Prince", "Escort The Witch Queen", "Steal The Necromancer's Heart", "Hold The Mountain Pass"],s:["Reward: Any Wish Granted", "Reward: Half The Treasury", "Reward: Whatever You Can Carry", "Reward: A Seat On Her Council", "Reward: Immortality", "Reward: A Lordship"],
   cap:["The notices are nailed to the palace gate, sealed in red wax, paid in gold. Pick the job, and don't ask too many questions."],
   next:[["contract-trap","No Witnesses","The job was real. So was the plan to leave no one alive to collect the fee."],
         ["payday","The Empty Treasury","You finish the job and return to find the treasury empty and the crown in debt."],
@@ -589,7 +590,7 @@ function renderEp(n){
   const opts = Array.from({length:frames(e)},(_,i)=>{
     const label = e.lore ? `Plate ${roman(i+1)}` : e.o[i];
     return `<figure class="opt${e.lore?" wide":""}"><div class="pic"><img src="${img(n,i+1)}" alt="${esc(label)}" loading="lazy" decoding="async"></div>
-      <figcaption>${e.lore?"":`<b>${roman(i+1)}.</b>`}${esc(label)}</figcaption></figure>`;
+      <figcaption>${e.lore?"":`<b>${roman(i+1)}.</b>`}${esc(label)}${!e.lore&&e.s&&e.s[i]?`<small>${esc(e.s[i])}</small>`:""}</figcaption></figure>`;
   }).join("");
   const cap = e.cap.map((p,i) => {
     if (p.startsWith("!")) return `<p class="q">${esc(p.slice(1))}</p>`;
@@ -628,7 +629,6 @@ function renderEp(n){
     </section>
     <section class="sec" id="next">
       <h2>The Tale Continues</h2>
-      <p class="sub">Each chapter unseals the day it's posted on Instagram.</p>
       <div class="chaps">${cards}</div>
     </section>
     <footer class="foot">
