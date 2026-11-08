@@ -253,7 +253,11 @@ const AMB = { 1:"wind",2:"wind",3:"water",4:"wind",5:"drone",6:"fire",7:"fire",8
 function audio(){
   if (SND.ctx) return SND.ctx;
   const C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
-  const ctx = SND.ctx = new C(); SND.master = ctx.createGain(); SND.master.gain.value = .9; SND.master.connect(ctx.destination);
+  const ctx = SND.ctx = new C();
+  /* louder ambience with a limiter so nothing clips */
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.knee.value = 12; comp.ratio.value = 6; comp.attack.value = .005; comp.release.value = .25;
+  SND.master = ctx.createGain(); SND.master.gain.value = 3.2; SND.master.connect(comp).connect(ctx.destination);
+  SND.analyser = ctx.createAnalyser(); comp.connect(SND.analyser);
   const len = ctx.sampleRate * 3, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
   let b = 0; for (let i = 0; i < len; i++) { const w = Math.random()*2-1; b = (b + .02*w) / 1.02; d[i] = w*.6 + b*3; }
   SND.noise = buf; return ctx;
@@ -323,10 +327,21 @@ function sfx(type){
   } else if (type === "pick") { bell(659.3, 0, .9, .1); bell(987.8, .07, 1.1, .08); }
   else if (type === "rune") { [196, 293.7, 392, 587.3].forEach((f, k) => bell(f, k*.12, 2.2, .09)); }
 }
+function silentWav(){
+  const sr = 8000, n = sr / 2, b = new Uint8Array(44 + n), v = new DataView(b.buffer);
+  const w = (o, t) => [...t].forEach((c, i) => b[o + i] = c.charCodeAt(0));
+  w(0, "RIFF"); v.setUint32(4, 36 + n, true); w(8, "WAVEfmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, "data"); v.setUint32(40, n, true); b.fill(128, 44);
+  return URL.createObjectURL(new Blob([b], { type: "audio/wav" }));
+}
+function unlockIOS(){
+  if (!SND.tag) { SND.tag = new Audio(silentWav()); SND.tag.loop = true; SND.tag.setAttribute("playsinline", ""); }
+  SND.tag.play().catch(() => {});
+}
 function toggleSound(){
   SND.on = !SND.on; LS.set("obs_sound", SND.on);
-  if (SND.on) { audio(); SND.ctx?.resume(); setAmbience(); toast("Sound on"); }
-  else { SND.cur?.stop(); SND.cur = null; toast("Sound off"); }
+  if (SND.on) { unlockIOS(); audio(); SND.ctx?.resume(); setAmbience(); toast("Sound on"); }
+  else { SND.cur?.stop(); SND.cur = null; SND.tag?.pause(); toast("Sound off"); }
   paintSound();
 }
 function paintSound(){
@@ -337,7 +352,8 @@ function paintSound(){
   b.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/>${SND.on ? '<path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>' : '<path d="M17 9l5 6M22 9l-5 6"/>'}</svg>`;
 }
 /* browsers need a tap before audio may play: resume quietly on the first gesture if sound was left on */
-document.addEventListener("pointerdown", () => { if (SND.on) { audio(); SND.ctx?.resume(); setAmbience(); } }, { once: true });
+document.addEventListener("pointerdown", ev => { if (SND.on && !ev.target.closest("#sound")) { unlockIOS(); audio(); SND.ctx?.resume(); setAmbience(); } }, { once: true });
+window.__obsSound = SND;
 
 /* ======================= wire into the page ======================= */
 const _renderEp = renderEp, _renderTree = renderTree, _route = route, _lbShow = lbShow, _playT = playTransition, _playR = playReturn;
