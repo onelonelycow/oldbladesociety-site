@@ -296,7 +296,8 @@ button.pic:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.7
 /* ---------- tree -> tale transition: the medallion lifts off the branch, golden roots grow out of it, the tale opens ---------- */
 .tx{position:fixed;inset:0;z-index:110;pointer-events:auto;overflow:hidden}
 .tx[hidden]{display:none}
-body.txing .backdrop{visibility:hidden}
+body.txing .backdrop,body.txing .vignette{visibility:hidden}
+body.txing::after{display:none}
 .tx .veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,color-mix(in srgb,var(--acc) 26%,#120c08) 0%,#0b0705 55%,#050302 100%);opacity:0}
 .tx svg.vines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .tx svg.vines path{fill:none;stroke-linecap:round}
