@@ -73,7 +73,9 @@ function paintPicks(){
   if (sec && picked && P.loaded) {
     const s = sum || Object.assign(document.createElement("p"), { className: "pick-sum" });
     const same = c[mine] || 0;
-    s.textContent = total > 1 ? `${same} of ${total} travellers chose ${pickName(n, mine)}.` : `You're the first to choose here.`;
+    const walked = choiceTales().filter(t => P.mine[t] !== undefined).length;
+    s.innerHTML = esc(total > 1 ? `${same} of ${total} travellers chose ${pickName(n, mine)}.` : `You're the first to choose here.`)
+      + (walked >= 3 ? ` <button type="button" class="pp-legend" data-legend>Forge your Legend</button>` : "");
     if (!sum) $(".strip").after(s);
   }
   lbPaint();
@@ -81,16 +83,7 @@ function paintPicks(){
 function paintTreePath(){
   const tales = choiceTales();
   const done = tales.filter(n => P.mine[n] !== undefined).length;
-  const crest = $(".crest");
-  if (crest) {
-    let pr = crest.querySelector(".path-prog");
-    if (!pr) { pr = document.createElement("div"); pr.className = "path-prog"; crest.appendChild(pr); }
-    pr.innerHTML = done
-      ? `<div class="pp-pips" aria-hidden="true">${tales.map(n => `<i class="${P.mine[n] !== undefined ? "on" : ""}"></i>`).join("")}</div>
-         <div class="pp-t">${done} of ${tales.length} tales walked${done >= 3 ? ` · <button type="button" class="pp-legend" data-legend>Forge your Legend</button>` : ""}</div>`
-      : "";
-    pr.hidden = !done;
-  }
+  $(".crest .path-prog")?.remove();   /* no counter: the path shows on the tree itself (gold medallions) */
   $$(".tree .node").forEach(node => {
     const a = node.querySelector("a.med"); if (!a) return;
     const n = +(/#ep-(\d+)/.exec(a.getAttribute("href")) || [])[1];
