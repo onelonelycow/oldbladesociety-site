@@ -127,12 +127,12 @@ a.plaque:hover{border-color:var(--acc);color:var(--gilt-hi)}
 .twig .tt{opacity:.9;min-width:0}
 .twig .cnt{font-family:var(--f-title);font-size:10px;letter-spacing:.04em;color:var(--ink);background:var(--acc);border-radius:8px;padding:1px 6px;font-variant-numeric:tabular-nums;line-height:1.4}
 .twig .cnt:empty{display:none}
-.twig.lit .cnt{background:none;color:var(--gilt);padding:0;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
+.twig.lit .cnt{background:none;color:var(--gilt-hi);padding:0;font-size:14px;letter-spacing:0;line-height:1}
 .twig.mine .bud{border-style:solid;border-color:var(--acc);background:var(--acc)}
 .twig.mine .tt{opacity:1;color:var(--vellum)}
-.twig.lit{color:var(--vellum)}
+.twig.lit{color:var(--vellum);grid-template-columns:10px auto auto;justify-content:start}
 .twig.lit .bud{border:1px solid var(--gilt-hi);background:radial-gradient(var(--gilt-hi),var(--acc));box-shadow:0 0 8px var(--acc);width:10px;height:10px}
-.twig.lit .tt{opacity:1;font-style:normal;font-family:var(--f-title);font-size:12px;letter-spacing:.03em}
+.twig.lit .tt{opacity:1;color:var(--gilt-hi)}
 a.twig:hover .tt{opacity:1;color:var(--gilt-hi)}
 
 .roots{display:block;width:min(560px,100%);margin:-2px auto 0;height:auto}
@@ -665,7 +665,7 @@ function twigsHTML(e){
   if (!isOpen(e.n)) return "";
   const h = chaptersOf(e).map(([id,title])=>{
     const r = releasedAs(e.n,id);
-    return r ? `<li><a href="#ep-${r}" class="twig lit"><i class="bud"></i><span class="tt">${esc(title)}</span><span class="cnt">read</span></a></li>`
+    return r ? `<li><a href="#ep-${r}" class="twig lit"><i class="bud"></i><span class="tt">${esc(title)}</span><span class="cnt" aria-hidden="true">→</span></a></li>`
              : `<li><span class="twig locked"><i class="bud"></i><span class="tt">${esc(title)}</span></span></li>`;
   }).join("");
   return h ? `<ul class="twigs">${h}</ul>` : "";
