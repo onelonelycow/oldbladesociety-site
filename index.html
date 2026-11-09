@@ -277,6 +277,8 @@ section.sec{margin-top:clamp(34px,4.5vw,46px)}
 .chap.released:hover .thumb img{transform:scale(1.04)}
 .chap.released .go{color:var(--gilt)}
 .twig.locked{opacity:.55;filter:grayscale(1)}
+.chap.here{cursor:default;border-color:var(--gilt)}
+.chap.here .go{color:var(--gilt-hi)}
 .twig.locked .bud{border-style:dashed}
 .opt figcaption small{display:block;margin-top:3px;font-family:var(--f-body);font-size:13.5px;letter-spacing:.01em;text-transform:none;color:var(--vellum);opacity:.7;line-height:1.3}
 
@@ -657,7 +659,10 @@ const shown = () => [...POSTED, ...EPS.map(e=>e.n).filter(n=>!POSTED.includes(n)
 const dn = n => { const i = shown().indexOf(n); return i<0 ? n : i+1; };   /* display number = place on the tree */
 const draft = n => !POSTED.includes(n);
 /* Each tale continues as a three-part series by default; give a tale parts:4 to show a fourth. */
-const chaptersOf = e => (e.sequel ? [["fully-grown", e.sequel.title.replace(/^Chapter II — /,""), e.sequel.blurb]] : []).concat(e.next||[]).slice(0, e.parts||3);
+/* Each tale is a series: Part I is the tale itself, then Part II and Part III (parts:4 adds a Part IV).
+   chaptersOf returns the parts AFTER Part I: the first branch (or the sequel) is Part II, the last branch is the final part. */
+const chaptersOf = e => { const l = (e.sequel ? [["fully-grown", e.sequel.title.replace(/^Chapter II — /,""), e.sequel.blurb]] : []).concat(e.next||[]);
+  return e.parts===4 ? l.slice(0,3) : l.length>1 ? [l[0], l[l.length-1]] : l; };
 const releasedAs = (n,id) => { const t = RELEASED[`${n}:${id}`]; return t && BY[t] && isOpen(t) ? t : 0; };
 
 /* ===== tree ===== */
@@ -737,14 +742,16 @@ function renderEp(n){
   /* On a sequel page, show the parent's series so both pages read as one tale:
      the slot this sequel fills becomes a link back to Part I; the other slots stay exactly as on Part I. */
   const host = SEQ[n] ? BY[SEQ[n]] : e;
-  const cards = chaptersOf(host).map(([id,title,blurb],i)=>{
-    let r = releasedAs(host.n,id);
-    if (SEQ[n] && r===n) return `<a class="chap released" href="#ep-${host.n}"><div class="thumb"><img src="${img(host.n,0)}" alt="" loading="lazy"></div><div class="body">
-<h3>${esc(host.t)}</h3><p>${esc(host.cap[0].length>110?host.cap[0].slice(0,host.cap[0].lastIndexOf(" ",107))+"…":host.cap[0])}</p><span class="go">← Back to the beginning</span></div></a>`;
-    return r
-      ? `<a class="chap released" href="#ep-${r}"><div class="thumb"><img src="${img(r,0)}" alt="" loading="lazy"></div><div class="body">
-<h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Read the chapter →</span></div></a>`
-      : `<article class="chap locked"><div class="thumb"><img src="${img(host.n,0)}" alt="" loading="lazy"><svg class="seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal-blank"/><text x="50" y="52" text-anchor="middle" dominant-baseline="central" font-family="'Cinzel Decorative','Cinzel',Georgia,serif" font-weight="900" font-size="${roman(i+1).length>2?24:roman(i+1).length>1?28:32}" fill="#2a0503" stroke="#e07a6a" stroke-opacity=".45" stroke-width=".8">${roman(i+1)}</text></svg></div><div class="body">
+  const short = t => t.length>110 ? t.slice(0,t.lastIndexOf(" ",107))+"…" : t;
+  const series = [["part-1", host.t, short(host.cap[0]), host.n]].concat(chaptersOf(host).map(([id,t,bl])=>[id,t,bl,releasedAs(host.n,id)]));
+  const sealSvg = k => `<svg class="seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal-blank"/><text x="50" y="52" text-anchor="middle" dominant-baseline="central" font-family="'Cinzel Decorative','Cinzel',Georgia,serif" font-weight="900" font-size="${k.length>2?24:k.length>1?28:32}" fill="#2a0503" stroke="#e07a6a" stroke-opacity=".45" stroke-width=".8">${k}</text></svg>`;
+  const cards = series.map(([id,title,blurb,r],i)=>{
+    const k = roman(i+1);
+    if (r === n) return `<article class="chap released here"><div class="thumb"><img src="${img(r,0)}" alt="" loading="lazy"></div><div class="body">
+<h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Part ${k} · You are here</span></div></article>`;
+    if (r) return `<a class="chap released" href="#ep-${r}"><div class="thumb"><img src="${img(r,0)}" alt="" loading="lazy"></div><div class="body">
+<h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">${i < series.findIndex(x=>x[3]===n) ? "← " : ""}Read Part ${k}${i > series.findIndex(x=>x[3]===n) ? " →" : ""}</span></div></a>`;
+    return `<article class="chap locked"><div class="thumb"><img src="${img(host.n,0)}" alt="" loading="lazy">${sealSvg(k)}</div><div class="body">
 <h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Coming soon</span></div></article>`;
   }).join("");
   const openNs = SEQ[n] ? [SEQ[n], n] : shown().filter(isOpen);
