@@ -734,12 +734,17 @@ function renderEp(n){
     if (i===0) { const ch=[...p][0]; return `<p>${illum(ch)}<span class="sr">${esc(ch)}</span>${esc(p.slice(ch.length))}</p>`; }
     return `<p>${esc(p)}</p>`;
   }).join("");
-  const cards = chaptersOf(e).map(([id,title,blurb],i)=>{
-    const r = releasedAs(n,id);
+  /* On a sequel page, show the parent's series so both pages read as one tale:
+     the slot this sequel fills becomes a link back to Part I; the other slots stay exactly as on Part I. */
+  const host = SEQ[n] ? BY[SEQ[n]] : e;
+  const cards = chaptersOf(host).map(([id,title,blurb],i)=>{
+    let r = releasedAs(host.n,id);
+    if (SEQ[n] && r===n) return `<a class="chap released" href="#ep-${host.n}"><div class="thumb"><img src="${img(host.n,0)}" alt="" loading="lazy"></div><div class="body">
+<h3>${esc(host.t)}</h3><p>${esc(host.cap[0].length>110?host.cap[0].slice(0,host.cap[0].lastIndexOf(" ",107))+"…":host.cap[0])}</p><span class="go">← Back to the beginning</span></div></a>`;
     return r
       ? `<a class="chap released" href="#ep-${r}"><div class="thumb"><img src="${img(r,0)}" alt="" loading="lazy"></div><div class="body">
 <h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Read the chapter →</span></div></a>`
-      : `<article class="chap locked"><div class="thumb"><img src="${img(n,0)}" alt="" loading="lazy"><svg class="seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal-blank"/><text x="50" y="52" text-anchor="middle" dominant-baseline="central" font-family="'Cinzel Decorative','Cinzel',Georgia,serif" font-weight="900" font-size="${roman(i+1).length>2?24:roman(i+1).length>1?28:32}" fill="#2a0503" stroke="#e07a6a" stroke-opacity=".45" stroke-width=".8">${roman(i+1)}</text></svg></div><div class="body">
+      : `<article class="chap locked"><div class="thumb"><img src="${img(host.n,0)}" alt="" loading="lazy"><svg class="seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal-blank"/><text x="50" y="52" text-anchor="middle" dominant-baseline="central" font-family="'Cinzel Decorative','Cinzel',Georgia,serif" font-weight="900" font-size="${roman(i+1).length>2?24:roman(i+1).length>1?28:32}" fill="#2a0503" stroke="#e07a6a" stroke-opacity=".45" stroke-width=".8">${roman(i+1)}</text></svg></div><div class="body">
 <h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Coming soon</span></div></article>`;
   }).join("");
   const openNs = SEQ[n] ? [SEQ[n], n] : shown().filter(isOpen);
