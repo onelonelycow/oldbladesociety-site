@@ -652,7 +652,8 @@ const S = {
   writing:false, note:""
 };
 const isOpen = n => !HIDDEN.includes(n) && (S.owner || POSTED.includes(n));
-const shown = () => [...POSTED, ...EPS.map(e=>e.n).filter(n=>!POSTED.includes(n)&&!HIDDEN.includes(n))];   /* posted tales, then sealed ones still to come */
+const SEQ = Object.fromEntries(Object.entries(RELEASED).map(([k,v])=>[v,+k.split(":")[0]]));   /* sequel tale -> parent tale; sequels live under their parent, not on the trunk */
+const shown = () => [...POSTED, ...EPS.map(e=>e.n).filter(n=>!POSTED.includes(n)&&!HIDDEN.includes(n))].filter(n=>!SEQ[n]);   /* posted tales, then sealed ones still to come */
 const dn = n => { const i = shown().indexOf(n); return i<0 ? n : i+1; };   /* display number = place on the tree */
 const draft = n => !POSTED.includes(n);
 /* Each tale continues as a three-part series by default; give a tale parts:4 to show a fourth. */
@@ -741,7 +742,7 @@ function renderEp(n){
       : `<article class="chap locked"><div class="thumb"><img src="${img(n,0)}" alt="" loading="lazy"><svg class="seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal-blank"/><text x="50" y="52" text-anchor="middle" dominant-baseline="central" font-family="'Cinzel Decorative','Cinzel',Georgia,serif" font-weight="900" font-size="${roman(i+1).length>2?24:roman(i+1).length>1?28:32}" fill="#2a0503" stroke="#e07a6a" stroke-opacity=".45" stroke-width=".8">${roman(i+1)}</text></svg></div><div class="body">
 <h3>${esc(title)}</h3><p>${esc(blurb)}</p><span class="go">Coming soon</span></div></article>`;
   }).join("");
-  const openNs = shown().filter(isOpen);
+  const openNs = SEQ[n] ? [SEQ[n], n] : shown().filter(isOpen);
   const idx = openNs.indexOf(n), prev = openNs[idx-1], next = openNs[idx+1];
   app.innerHTML = `
   <div class="ep" style="--acc:${ACC[n]}">
@@ -749,7 +750,7 @@ function renderEp(n){
     <header class="hero">
       <div class="frame"><img src="${img(n,0)}" alt="Cover of tale ${n}, ${esc(e.t)}"></div>
       <div>
-        <div class="eyebrow">${"Tale "+roman(dn(n))}${e.lore?" · Lore":""}</div>
+        <div class="eyebrow">${SEQ[n]?`<a href="#ep-${SEQ[n]}">Tale ${roman(dn(SEQ[n]))}</a> · Part II`:"Tale "+roman(dn(n))}${e.lore?" · Lore":""}</div>
         <h1>${esc(e.t)}</h1>
         <p class="hook">${esc(e.hook)}</p>
         <button type="button" class="share" data-share="${n}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>Share this tale</button>
