@@ -423,15 +423,15 @@ body.txing::after{display:none}
 /* ===== One-line publish switch: tales listed here are open to everyone. ===== */
 /* Tales open to everyone, in the order they were posted on Instagram. The tree grows in this order and numbers tales by it.
    Tales not listed are hidden from the public (the owner sees them at the top as drafts). */
-const POSTED = [1,2,4,8,9,10,5,3,13,11,12,6,15,7,20,22,23,25];
+const POSTED = [1,2,4,8,9,10,5,3,13,11,12,6,15,7,20,22,23,25,28,26,27,34,36,35];
 /* Never shown anywhere (tests, retired). */
 const HIDDEN = [17];
 
 const IG = "https://www.instagram.com/oldbladesociety/";
-const ACC = {1:"#c9a14a",2:"#d0603a",3:"#d8b45a",4:"#8fa37a",5:"#b2453a",6:"#c0703a",7:"#4f9a8a",8:"#c4572e",9:"#b88ac0",10:"#c9a14a",11:"#6fa0c8",12:"#b0503c",13:"#8c6aa8",14:"#d4b48a",15:"#b58a3c",16:"#d6904a",17:"#6aa8a0",18:"#d4a24a",19:"#c87a3a",20:"#c9a14a",21:"#5fb0b0",22:"#e07a3a",23:"#6f9a5a",25:"#b8483a"};
+const ACC = {1:"#c9a14a",2:"#d0603a",3:"#d8b45a",4:"#8fa37a",5:"#b2453a",6:"#c0703a",7:"#4f9a8a",8:"#c4572e",9:"#b88ac0",10:"#c9a14a",11:"#6fa0c8",12:"#b0503c",13:"#8c6aa8",14:"#d4b48a",15:"#b58a3c",16:"#d6904a",17:"#6aa8a0",18:"#d4a24a",19:"#c87a3a",20:"#c9a14a",21:"#5fb0b0",22:"#e07a3a",23:"#6f9a5a",25:"#b8483a",26:"#d0603a",27:"#8fa37a",28:"#5f8fb0",34:"#3f6fc0",35:"#8c6aa8",36:"#6fa0c8"};
 
 /* Chapters unseal when their sequel is posted: "parentTale:chapterId" -> sequel tale number (that tale must also be in POSTED). */
-const RELEASED = { "1:orders-war": 25 /* , "22:fully-grown": 24 */ };
+const RELEASED = { "1:orders-war": 25, "2:blade-will": 26, "4:beast-collector": 27, "11:land-claims": 36, "13:it-finds": 35 /* , "22:fully-grown": 24 */ };
 const EPS = [
  {n:1,t:"The Six Oaths",hook:"The Old King Is Dead. Which Order Do You And Bro Swear To?",
   o:["The Dawn Watch","The Frost Oath","The Rose Court","The Tide Sworn","The Grave Wardens","The Hex Circle"],
@@ -495,9 +495,9 @@ const EPS = [
  {n:11,t:"The Outcast Road",hook:"You And Your Bro Just Got Exiled. Which Land Are You Surviving In?",
   o:["The Ashen Kingdom","The Hanging Isles","The Walking Island","The Glowing Deep","The Frozen Wave","The Weeping Forest"],
   cap:["They took your names, your lands and your horses, and pointed you at the edge of the map. Only one wild country will have you."],
-  next:[["road-home","The Smuggler's Way","A smuggler knows a way back across the border, for a price."],
+  next:[["land-claims","The Wild Takes Root","Stay long enough and the wild country starts to change you and bro into something native."],
         ["exile-army","The Outcast Host","Every outcast in the land starts gathering around the two of you."],
-        ["land-claims","The Wild Takes Root","Stay long enough and the wild country starts to change you and bro into something native."]]},
+        ["road-home","The Smuggler's Way","A smuggler knows a way back across the border, for a price."]]},
  {n:12,t:"The Undying Watch",hook:"You And Your Bro Are The Last Knights Of A Dead Kingdom. Which Ruin Do You Guard Forever?",
   o:["The Ashen Throne","The Crimson Citadel","The Drowned Gate","The Black Lighthouse","The Emerald Tomb","The Burnt Library"],
   cap:["The kingdom fell a hundred winters ago and nobody told the two of you to stop. Pick the ruin you will hold until the end."],
@@ -597,6 +597,36 @@ const EPS = [
   next:[["empty-throne","The Empty Throne","The fighting stops at the palace doors. Six orders, one throne, and nobody willing to kneel."],
         ["oathbreaker","The First To Break","One order lays down its banner in the night. Nobody knows which, until the morning."],
         ["after-war","What The Crows Leave","When the war ends, you and bro walk the field looking for the friends you rode in with."]]},
+ {n:26,t:"The Steel That Wakes",hook:"The Blade You Found Has Woken Up. Which One Is In Your Hands Now?",
+  o:["Emberfang","Wildwood","Sunscar","Moonsilver","Kingsbane","Harvest Edge"],
+  s:["Wakes In Fire","Wakes The Forest","Calls The Sun","Walks The Water","Wakes The Dead Kings","Reaps The Storm"],
+  cap:["The blade you hunted down has finally woken, and it remembers every hand that ever held it. Which one is in yours now?"],
+  next:[["other-hunters","Five Hands In The Dark","Five blades are still out there. Whoever found them is coming for yours."]]},
+ {n:27,t:"The Man In The Trophy Coat",hook:"The Beast Hunter Has Come For Your Companion. Which Of You Breaks Free?",
+  o:["Grimfang","Duskmaw","Hollowhart","Mirescale","Gravewing","Ironhide"],
+  cap:["A man in a coat of trophies has been hunting every companion in the realm, and tonight he found yours. Which one of you is breaking free?"],
+  next:[["pack-calls","Howls From The Hills","Your companion hears its own kind howling in the hills. It has to choose between them and you."]]},
+ {n:28,t:"The Night Watch",hook:"You And Bro Pulled The Night Watch. Which Post Are You Two Taking?",
+  o:["The Crypt Gate","The Lighthouse","The Bell Tower","The Treasury Vault","The Border Wall","The Night Ferry"],
+  cap:["The captain has six posts to fill before midnight, and you and your bro only get one. Look closely, not everything out there is asleep."],
+  next:[["watch-bell","The Bell At Midnight","Halfway through the watch, every bell in the city rings at once."],
+        ["watch-gone","The Empty Post","At dawn the captain counts his watchmen. One post is empty, and nobody saw them leave."],
+        ["watch-dawn","What Came At Dawn","The sun comes up and you finally see what was walking the dark all night."]]},
+ {n:34,t:"The War Horn",hook:"Your Kingdom Has No Army Left. Which Beast Defends Your Walls?",
+  o:["Bhaldur","Lumeth","Zharuun","Ombrak","Ixtali","Shirai"],
+  cap:["Your kingdom has no army left. You blow the old war horn and six ancient beasts answer. Which one defends your walls?"],
+  next:[["horn-siege","The Siege Of The Walls","The enemy reaches the walls at dawn, and your beast is the only thing standing in the gate."],
+        ["horn-price","The Price Of The Horn","Ancient beasts never answer for free. Now yours wants something back."],
+        ["horn-second","The Second Call","Someone else in the realm has found a war horn of their own."]]},
+ {n:35,t:"The Second Night",hook:"The Second Night. It Found You. Which Hiding Place Broke First?",
+  o:["Inside The Fallen Bell","In The Beached Hull","Among The Ash Statues","In The Ice Cave","Under The Dead Roots","In The Poppy Field"],
+  cap:["Your hiding place held for one night. On the second, you heard it breathing outside. Now you finally see what has been hunting you and your bro."],
+  next:[["turn-fight","The Hunted Set The Snare","No more hiding. You and bro set a trap of your own."]]},
+ {n:36,t:"The Wild Takes Root",hook:"Years Into Exile, The Land Changed You. What Did You Become?",
+  o:["The Ashen Kingdom","The Hanging Isles","The Walking Island","The Glowing Deep","The Frozen Wave","The Weeping Forest"],
+  s:["Ember Skin & An Ash-Hound Pack","Real Wings & A Cloud Hawk","An Island That Obeys You","Glowing Skin & Night Sight","Ice Armour & A Frost Bear","Bark Horns & A Blood Stag"],
+  cap:["Years have passed since the exile. Stay long enough and the wild country starts making you one of its own."],
+  next:[["exile-army","The Outcast Host","Every outcast in the land starts gathering around the two of you."]]},
 ];
 const BY = Object.fromEntries(EPS.map(e=>[e.n,e]));
 
